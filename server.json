@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.davidmosiah/delx-agent-utilities",
+  "description": "Stateless utility tools for AI agents — URL/HTTP, DNS/RDAP, x402, JWT, encoding, parsing — local-first, no API keys.",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/davidmosiah/delx-agent-utilities",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "delx-agent-utilities",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": []
+    }
+  ],
+  "remotes": [],
+  "websiteUrl": "https://github.com/davidmosiah/delx-agent-utilities"
+}

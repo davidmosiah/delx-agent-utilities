@@ -1,0 +1,29 @@
+# Delx Agent Utilities
+
+Stateless utility tools for AI agents — 40 deterministic, session-free utilities for everyday agent operations.
+
+Repository: https://github.com/davidmosiah/delx-agent-utilities
+PyPI: https://pypi.org/project/delx-agent-utilities/
+Install: pipx install "delx-agent-utilities[mcp]"
+
+CLI: delx-agent-utilities (or delx-utils)
+MCP server: delx-utils-mcp
+
+Agent-readiness surfaces (call these first):
+- delx_utilities_manifest
+- delx_utilities_connection_status
+- delx_utilities_privacy_audit
+
+Tools are grouped:
+- Encoding & parsing (12): util_json_validate, util_token_estimate, util_uuid_generate, util_timestamp_convert, util_base64, util_hash, util_regex_test, util_cron_describe, util_http_codes, util_jwt_inspect, util_csv_to_json, util_json_to_csv
+- Web extract (6): util_page_extract, util_open_graph, util_links_extract, util_forms_extract, util_contact_extract, util_feed_discover
+- Network probes (8): util_url_health, util_robots_inspect, util_sitemap_probe, util_tls_inspect, util_security_txt_inspect, util_http_headers_inspect, util_dns_lookup, util_rdap_lookup
+- x402 / API intel (5): util_x402_server_probe, util_x402_resource_summary, util_x402_server_audit, util_api_health_report, util_openapi_summary
+- Identity / contact (1): util_email_validate
+- Composite reports (8): util_website_intelligence_report, util_domain_trust_report, util_docs_site_map, util_pricing_page_extract, util_company_contact_pack, util_api_integration_readiness, util_login_surface_report, util_content_distribution_report
+
+Safety:
+- No API keys required; networked tools call only public endpoints (rdap.org, dns.google) plus user-supplied URLs.
+- Stateless: no session, no cache, no DB.
+- Deterministic: no LLM calls.
+- Not for high-throughput scraping or authoritative DNS / WHOIS verification.

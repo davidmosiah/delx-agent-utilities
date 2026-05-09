@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "delx-agent-utilities"
+version = "0.1.0"
+description = "Stateless utility tools for AI agents — URL/DNS/x402/JWT/encoding/parsing — local-first, deterministic, no API keys."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "David Mosiah" }]
+keywords = [
+  "ai-agents",
+  "agent-tools",
+  "agentic-workflows",
+  "agent-utilities",
+  "delx",
+  "mcp",
+  "mcp-server",
+  "model-context-protocol",
+  "x402",
+  "local-first",
+  "stateless",
+  "cli",
+]
+dependencies = [
+  "httpx>=0.27",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.13.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24"]
+
+[project.scripts]
+delx-agent-utilities = "delx_agent_utilities.cli:main"
+delx-utils = "delx_agent_utilities.cli:main"
+delx-utils-mcp = "delx_agent_utilities.mcp_server:main"
+
+[project.urls]
+Homepage = "https://github.com/davidmosiah/delx-agent-utilities"
+Repository = "https://github.com/davidmosiah/delx-agent-utilities"
+Issues = "https://github.com/davidmosiah/delx-agent-utilities/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/delx_agent_utilities"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
