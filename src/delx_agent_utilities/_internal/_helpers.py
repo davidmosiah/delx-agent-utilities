@@ -14,6 +14,7 @@ import asyncio
 import base64
 import csv
 import hashlib
+import ipaddress
 import inspect
 import io
 import json
@@ -48,9 +49,30 @@ def _normalize_url(value: str) -> str:
     raw = str(value or "").strip()
     if not raw:
         return ""
+    parsed = urlparse(raw)
+    if parsed.scheme:
+        return raw
     if not raw.startswith(("http://", "https://")):
         raw = "https://" + raw
     return raw
+
+
+def _blocked_url_reason(value: str) -> str:
+    parsed = urlparse(value)
+    if parsed.scheme not in {"http", "https"}:
+        return "blocked: only http and https URLs are allowed"
+    host = str(parsed.hostname or "").strip().lower()
+    if not host:
+        return "blocked: URL host is required"
+    if host in {"localhost", "0.0.0.0"} or host.endswith(".local"):
+        return "blocked: local network targets are not allowed"
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return ""
+    if not ip.is_global:
+        return "blocked: private, loopback, or link-local targets are not allowed"
+    return ""
 
 
 class _HTMLSnapshot(HTMLParser):
@@ -245,6 +267,9 @@ async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "G
     target = _normalize_url(url)
     if not target:
         return None, "url is required"
+    blocked = _blocked_url_reason(target)
+    if blocked:
+        return None, blocked
     httpx_error: Exception | None = None
     try:
         async with httpx.AsyncClient(
@@ -370,4 +395,3 @@ def _tls_probe_sync(host: str, port: int, timeout_s: int) -> dict[str, Any]:
         "days_until_expiry": days_until_expiry,
         "san_dns": san_dns[:50],
     }
-

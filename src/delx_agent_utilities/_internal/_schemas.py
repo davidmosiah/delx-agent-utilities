@@ -1,4 +1,4 @@
-"""Tool registry — names, required params, and MCP-compatible schemas for all 40 utilities."""
+"""Tool registry - names, required params, and MCP-compatible schemas for all utilities."""
 
 from __future__ import annotations
 
@@ -342,6 +342,7 @@ COMPOSITE_PAID_UTILITY_TOOL_NAMES: list[str] = [
     "util_domain_trust_report",
     "util_openapi_summary",
     "util_x402_server_audit",
+    "util_mcp_server_readiness_report",
     "util_docs_site_map",
     "util_pricing_page_extract",
     "util_company_contact_pack",
@@ -368,6 +369,7 @@ UTIL_REQUIRED_PARAMS.update(
         "util_domain_trust_report": ["url"],
         "util_openapi_summary": ["url"],
         "util_x402_server_audit": ["url"],
+        "util_mcp_server_readiness_report": ["url"],
         "util_docs_site_map": ["url"],
         "util_pricing_page_extract": ["url"],
         "util_company_contact_pack": ["url"],
@@ -518,6 +520,11 @@ UTIL_TOOL_SCHEMAS.update(
             "description": "Audit an x402 server with discovery, pricing, reliability, and documentation readiness signals.",
             "inputSchema": {"type": "object", "properties": {"url": {"type": "string", "description": "x402 server origin"}, "timeout": {"type": "integer", "description": "Timeout in seconds (1-15)", "default": 8, "minimum": 1, "maximum": 15}}, "required": ["url"]},
         },
+        "util_mcp_server_readiness_report": {
+            "name": "util_mcp_server_readiness_report",
+            "description": "Score an MCP server for initialize, tools/list, schema hygiene, manifest discovery, and agent usability.",
+            "inputSchema": {"type": "object", "properties": {"url": {"type": "string", "description": "HTTP origin or MCP server URL to inspect"}, "timeout": {"type": "integer", "description": "Timeout in seconds (1-15)", "default": 8, "minimum": 1, "maximum": 15}}, "required": ["url"]},
+        },
         "util_docs_site_map": {
             "name": "util_docs_site_map",
             "description": "Map a docs surface with crawl hints, docs links, feeds, and likely reference sections.",
@@ -550,5 +557,4 @@ UTIL_TOOL_SCHEMAS.update(
         },
     }
 )
-
 

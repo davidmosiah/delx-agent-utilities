@@ -31,7 +31,7 @@ def _print_json(payload: object) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="delx-agent-utilities",
-        description="Stateless utility tools for AI agents (40 tools).",
+        description="Stateless utility tools for AI agents (41 tools).",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -40,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("status", help="Print connection status.")
     sub.add_parser("privacy-audit", help="Print privacy posture.")
-    sub.add_parser("list-tools", help="List the 40 util tool names.")
+    sub.add_parser("list-tools", help="List the 41 util tool names.")
 
     show = sub.add_parser("show", help="Show a single tool's schema.")
     show.add_argument("tool", help="Tool name, e.g. util_url_health")

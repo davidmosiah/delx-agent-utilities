@@ -2,7 +2,7 @@
 
 Public API:
 - ``call_util_tool(tool_name, arguments)`` — async dispatcher returning a result dict
-- ``list_util_tool_schemas()`` — returns MCP-compatible schemas for all 40 tools
+- ``list_util_tool_schemas()`` — returns MCP-compatible schemas for all tools
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from ._internal._helpers import _normalize_url
+from ._internal._mcp_readiness import build_mcp_server_readiness_report
 from ._internal._schemas import (
     UTIL_REQUIRED_PARAMS,
     UTIL_TOOL_NAMES,
@@ -95,6 +96,7 @@ _HANDLERS: dict[str, Any] = {
     "util_domain_trust_report": _domain_trust_report,
     "util_openapi_summary": _openapi_summary,
     "util_x402_server_audit": _x402_server_audit,
+    "util_mcp_server_readiness_report": build_mcp_server_readiness_report,
     "util_docs_site_map": _docs_site_map,
     "util_pricing_page_extract": _pricing_page_extract,
     "util_company_contact_pack": _company_contact_pack,
@@ -154,6 +156,7 @@ def _normalize_util_args(tool_name: str, arguments: dict) -> dict:
         "util_domain_trust_report",
         "util_openapi_summary",
         "util_x402_server_audit",
+        "util_mcp_server_readiness_report",
         "util_docs_site_map",
         "util_pricing_page_extract",
         "util_company_contact_pack",
@@ -239,5 +242,5 @@ async def call_util_tool(tool_name: str, arguments: dict) -> dict:
 
 
 def list_util_tool_schemas() -> list[dict]:
-    """Return MCP-compatible tool schemas for all 40 util tools."""
+    """Return MCP-compatible tool schemas for all util tools."""
     return list(UTIL_TOOL_SCHEMAS.values())

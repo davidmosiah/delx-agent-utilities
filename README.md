@@ -22,7 +22,7 @@
 
 ## What it is
 
-40 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, x402 server discovery, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
+41 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
 
 - **Stateless** — every call is independent; no session, no cache, no DB.
 - **No API keys** — public endpoints only (rdap.org, dns.google, plus user-supplied URLs).
@@ -54,7 +54,7 @@ CLI entrypoints: `delx-agent-utilities`, `delx-utils` (alias), `delx-utils-mcp` 
 }
 ```
 
-40 tools become available immediately, plus three agent-readiness surfaces:
+41 tools become available immediately, plus three agent-readiness surfaces:
 
 - `delx_utilities_manifest`
 - `delx_utilities_connection_status`
@@ -82,7 +82,7 @@ schemas = list_util_tool_schemas()
 print(f"{len(schemas)} tools available")
 ```
 
-## The 40 tools
+## The 41 tools
 
 ### Encoding & parsing (12)
 `util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
@@ -93,8 +93,8 @@ print(f"{len(schemas)} tools available")
 ### Network probes (8)
 `util_url_health`, `util_robots_inspect`, `util_sitemap_probe`, `util_tls_inspect`, `util_security_txt_inspect`, `util_http_headers_inspect`, `util_dns_lookup`, `util_rdap_lookup`
 
-### x402 / API intel (5)
-`util_x402_server_probe`, `util_x402_resource_summary`, `util_x402_server_audit`, `util_api_health_report`, `util_openapi_summary`
+### x402 / API intel (6)
+`util_x402_server_probe`, `util_x402_resource_summary`, `util_x402_server_audit`, `util_api_health_report`, `util_openapi_summary`, `util_mcp_server_readiness_report`
 
 ### Identity / contact (1)
 `util_email_validate`

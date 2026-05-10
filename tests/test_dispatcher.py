@@ -19,8 +19,8 @@ from delx_agent_utilities import (
 
 
 def test_registry_consistency():
-    assert len(UTIL_TOOL_NAMES) == 40
-    assert len(UTIL_TOOL_SCHEMAS) == 40
+    assert len(UTIL_TOOL_NAMES) == 41
+    assert len(UTIL_TOOL_SCHEMAS) == 41
     assert set(UTIL_TOOL_NAMES) == set(UTIL_TOOL_SCHEMAS.keys())
     for name in UTIL_TOOL_NAMES:
         assert name in UTIL_REQUIRED_PARAMS, f"required-params missing: {name}"
@@ -30,21 +30,21 @@ def test_registry_consistency():
         assert "inputSchema" in schema
 
 
-def test_list_util_tool_schemas_returns_40():
+def test_list_util_tool_schemas_returns_all_tools():
     schemas = list_util_tool_schemas()
-    assert len(schemas) == 40
+    assert len(schemas) == 41
     assert all("name" in s for s in schemas)
 
 
 def test_agent_surfaces():
     manifest = build_agent_manifest()
     assert manifest["project"] == "delx-agent-utilities"
-    assert manifest["tool_count"] == 40
+    assert manifest["tool_count"] == 41
     assert "delx_utilities_connection_status" in manifest["recommended_first_calls"]
 
     status = build_connection_status({})
     assert status["ok"] is True
-    assert status["tool_count"] == 40
+    assert status["tool_count"] == 41
 
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
@@ -144,6 +144,93 @@ async def test_alias_normalization():
         "util_hash", {"text": "hello", "algorithm": "md5"}
     )
     assert result["hash"] == "5d41402abc4b2a76b9719d911017c592"
+
+
+@pytest.mark.asyncio
+async def test_api_integration_readiness_returns_decision_ready_contract(monkeypatch):
+    from delx_agent_utilities._internal import _tools_web
+
+    async def fake_health(args):
+        return {"reachable": True, "status": 200, "latency_ms": 41, "content_type": "text/html"}
+
+    async def fake_headers(args):
+        return {
+            "security_headers_present": ["strict-transport-security", "x-content-type-options"],
+            "missing_security_headers": [],
+        }
+
+    async def fake_openapi(args):
+        return {
+            "reachable": True,
+            "url": "https://api.example.com/openapi.json",
+            "title": "Example API",
+            "version": "1.0.0",
+            "path_count": 6,
+            "auth_hints": ["bearer", "api key"],
+            "sample_paths": ["/v1/widgets", "/v1/users"],
+        }
+
+    async def fake_page(args):
+        return {
+            "reachable": True,
+            "title": "Example API docs",
+            "description": "Bearer auth, SDK quickstart, and rate limit guidance.",
+            "text_excerpt": "Install the Python SDK, use Bearer auth, and respect documented rate limits.",
+        }
+
+    async def fake_links(args):
+        return {
+            "links": [
+                {"url": "https://api.example.com/docs", "kind": "internal"},
+                {"url": "https://api.example.com/openapi.json", "kind": "internal"},
+                {"url": "https://github.com/example/sdk-python", "kind": "external"},
+                {"url": "https://api.example.com/docs/quickstart", "kind": "internal"},
+            ]
+        }
+
+    monkeypatch.setattr(_tools_web, "_api_health_report", fake_health)
+    monkeypatch.setattr(_tools_web, "_http_headers_inspect", fake_headers)
+    monkeypatch.setattr(_tools_web, "_openapi_summary", fake_openapi)
+    monkeypatch.setattr(_tools_web, "_page_extract", fake_page)
+    monkeypatch.setattr(_tools_web, "_links_extract", fake_links)
+
+    report = await call_util_tool(
+        "util_api_integration_readiness",
+        {"url": "https://api.example.com/docs", "timeout": 8},
+    )
+
+    assert report["tool_name"] == "util_api_integration_readiness"
+    assert report["surface"] == "delx-agent-utilities"
+    assert report["verdict"] == "ready"
+    assert report["api_readiness_score"] >= 85
+    assert report["readiness_level"] == "high"
+    assert report["auth"]["classification"] == "bearer_or_api_key_detected"
+    assert report["docs"]["openapi"]["found"] is True
+    assert "https://github.com/example/sdk-python" in report["docs"]["sdk_links"]
+    assert "missing_rate_limit_docs" not in report["blockers"]
+    assert "generate" in report["agent_next_action"].lower()
+    assert report["deterministic"] is True
+    assert report["llm_used"] is False
+
+
+@pytest.mark.asyncio
+async def test_mcp_server_readiness_is_registered_and_blocks_localhost():
+    assert "util_mcp_server_readiness_report" in UTIL_TOOL_NAMES
+
+    result = await call_util_tool("util_mcp_server_readiness_report", {"url": "http://localhost:3000"})
+
+    assert result["tool_name"] == "util_mcp_server_readiness_report"
+    assert "local" in result["error"]
+
+
+@pytest.mark.asyncio
+async def test_url_health_blocks_non_http_and_link_local_targets():
+    file_payload = await call_util_tool("util_url_health", {"url": "file:///etc/passwd"})
+    metadata_payload = await call_util_tool("util_url_health", {"url": "http://169.254.169.254/latest/meta-data/"})
+
+    assert file_payload["url"] == "file:///etc/passwd"
+    assert "blocked" in file_payload["reason"]
+    assert "blocked" in metadata_payload["reason"]
 
 
 @pytest.mark.asyncio

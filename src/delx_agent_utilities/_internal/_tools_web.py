@@ -24,6 +24,7 @@ from urllib.parse import urljoin, urlparse
 import httpx
 
 from ._helpers import _HTMLSnapshot, _fetch_http_response, _fetch_json_response, _fetch_text_response, _header_value, _host_matches_domain, _normalize_phone, _normalize_url, _parse_int, _social_label, _tls_probe_sync
+from ._api_readiness import build_api_integration_readiness_report
 
 
 async def _page_extract(args: dict) -> dict:
@@ -596,7 +597,16 @@ async def _x402_resource_summary(args: dict) -> dict:
     origin = _origin_from_url(url)
     response, payload, error = await _fetch_json_response(origin.rstrip("/") + "/.well-known/x402", timeout_s=timeout_s)
     if error or response is None or payload is None:
-        return {"url": origin, "reachable": False, "error": error or "fetch failed"}
+        return {
+            "url": origin,
+            "reachable": False,
+            "status": int(response.status_code) if response else 0,
+            "resource_count": 0,
+            "networks": [],
+            "resources": [],
+            "warning": error or "fetch failed",
+            "error": error or "fetch failed",
+        }
     if not isinstance(payload, dict):
         return {"url": origin, "reachable": False, "error": "unexpected x402 payload"}
     resources = payload.get("resourceCatalog")
@@ -883,35 +893,17 @@ async def _company_contact_pack(args: dict) -> dict:
 async def _api_integration_readiness(args: dict) -> dict:
     timeout = args.get("timeout", 8)
     url = args.get("url", "")
-    health, headers, openapi = await asyncio.gather(
-        _api_health_report({"url": url, "timeout": timeout}),
-        _http_headers_inspect({"url": url, "timeout": timeout}),
-        _openapi_summary({"url": url, "timeout": timeout}),
+    return await build_api_integration_readiness_report(
+        {"url": url, "timeout": timeout},
+        probes={
+            "health": _api_health_report,
+            "headers": _http_headers_inspect,
+            "openapi": _openapi_summary,
+            "page": _page_extract,
+            "links": _links_extract,
+        },
+        normalize_url=_normalize_url,
     )
-    has_openapi = bool(openapi.get("reachable"))
-    auth_hints = openapi.get("auth_hints", [])
-    readiness_score = 0
-    if health.get("reachable"):
-        readiness_score += 35
-    if has_openapi:
-        readiness_score += 35
-    if len(headers.get("security_headers_present") or []) >= 2:
-        readiness_score += 10
-    if auth_hints:
-        readiness_score += 10
-    if (openapi.get("path_count") or 0) >= 3:
-        readiness_score += 10
-    readiness_level = "high" if readiness_score >= 75 else "medium" if readiness_score >= 45 else "low"
-    return {
-        "url": _normalize_url(url),
-        "readiness_score": readiness_score,
-        "readiness_level": readiness_level,
-        "has_openapi": has_openapi,
-        "auth_hints": auth_hints,
-        "health": health,
-        "headers": headers,
-        "openapi": openapi,
-    }
 
 
 async def _login_surface_report(args: dict) -> dict:
@@ -1057,5 +1049,3 @@ async def _email_validate(args: dict) -> dict:
         "a_records": a_records,
         "likely_deliverable": bool(mx_records or a_records),
     }
-
-

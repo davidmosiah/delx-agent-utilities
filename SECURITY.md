@@ -4,7 +4,7 @@
 
 This package is a **local, stateless** utility toolkit. It does not store credentials, manage sessions, or call authenticated APIs. The threat surface is limited to:
 
-- Argument parsing for the 40 tools (every input is validated by the Zod-like Python schemas before dispatch).
+- Argument parsing for all utility tools (every input is validated by the Zod-like Python schemas before dispatch).
 - Outbound HTTP to user-supplied URLs (per-tool target).
 - Outbound HTTP to two public endpoints: `rdap.org` (RDAP) and `dns.google` (DNS-over-HTTPS).
 

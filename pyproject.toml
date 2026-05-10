@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "delx-agent-utilities"
-version = "0.1.0"
+version = "0.1.1"
 description = "Stateless utility tools for AI agents — URL/DNS/x402/JWT/encoding/parsing — local-first, deterministic, no API keys."
 readme = "README.md"
 requires-python = ">=3.10"

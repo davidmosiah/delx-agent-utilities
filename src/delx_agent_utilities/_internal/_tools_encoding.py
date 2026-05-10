@@ -223,14 +223,18 @@ async def _url_health(args: dict) -> dict:
         return {"url": url, "reachable": False, "status": 0, "reason": str(e), "field": "timeout", "expected": "integer (1-10)"}
     timeout_s = min(10, max(1, timeout_s))
 
-    if not url.startswith(("http://", "https://")):
-        url = "https://" + url
+    url = _normalize_url(url)
 
     start = datetime.now(timezone.utc)
     resp, error = await _fetch_http_response(url, timeout_s=timeout_s, method="HEAD")
     elapsed_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
     if error or resp is None:
-        return {"url": url, "reachable": False, "status": 0, "reason": error or "fetch failed", "latency_ms": elapsed_ms}
+        payload = {"url": url, "reachable": False, "status": 0, "reason": error or "fetch failed", "latency_ms": elapsed_ms}
+        if "only http and https" in str(error or ""):
+            payload["code"] = "invalid_protocol"
+        elif "blocked" in str(error or ""):
+            payload["code"] = "blocked_target"
+        return payload
 
     return {
         "url": url,
@@ -316,5 +320,3 @@ def _regex_test(args: dict) -> dict:
         "matches": matches[:50],  # cap at 50
         "has_more": len(matches) > 50,
     }
-
-

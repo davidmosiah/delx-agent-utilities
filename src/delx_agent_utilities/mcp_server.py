@@ -1,6 +1,6 @@
 """MCP server entrypoint for delx-agent-utilities.
 
-Exposes 40 util tools plus the standard ``delx_utilities_manifest /
+Exposes 41 util tools plus the standard ``delx_utilities_manifest /
 connection_status / privacy_audit`` agent-readiness surfaces.
 
 Run with::

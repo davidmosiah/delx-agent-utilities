@@ -2,7 +2,7 @@
 
 ## Scope
 
-`delx-agent-utilities` is a stateless, MCP-compatible toolkit. 40 utility tools + 3 agent-readiness surfaces (`manifest` / `connection_status` / `privacy_audit`).
+`delx-agent-utilities` is a stateless, MCP-compatible toolkit. 41 utility tools + 3 agent-readiness surfaces (`manifest` / `connection_status` / `privacy_audit`).
 
 ## Commands
 
