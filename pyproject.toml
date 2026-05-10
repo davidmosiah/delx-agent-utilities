@@ -50,9 +50,10 @@ delx-utils = "delx_agent_utilities.cli:main"
 delx-utils-mcp = "delx_agent_utilities.mcp_server:main"
 
 [project.urls]
-Homepage = "https://github.com/davidmosiah/delx-agent-utilities"
+Homepage = "https://ontology.delx.ai/utilities"
 Repository = "https://github.com/davidmosiah/delx-agent-utilities"
 Issues = "https://github.com/davidmosiah/delx-agent-utilities/issues"
+Documentation = "https://ontology.delx.ai/docs/utilities"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/delx_agent_utilities"]

@@ -3,6 +3,8 @@
 Stateless utility tools for AI agents — 40 deterministic, session-free utilities for everyday agent operations.
 
 Repository: https://github.com/davidmosiah/delx-agent-utilities
+Docs: https://ontology.delx.ai/utilities
+Utility docs: https://ontology.delx.ai/docs/utilities
 PyPI: https://pypi.org/project/delx-agent-utilities/
 Install: pipx install "delx-agent-utilities[mcp]"
 

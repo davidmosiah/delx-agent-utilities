@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://delx.ai"><img src="https://img.shields.io/badge/delx.ai-0EA5A3?style=for-the-badge&labelColor=0F172A&logoColor=white" alt="delx.ai" /></a>
+  <a href="https://ontology.delx.ai/utilities"><img src="https://img.shields.io/badge/ontology.delx.ai%2Futilities-0EA5A3?style=for-the-badge&labelColor=0F172A&logoColor=white" alt="Delx Agent Utilities" /></a>
   <a href="https://github.com/davidmosiah/delx-agent-utilities/stargazers"><img src="https://img.shields.io/github/stars/davidmosiah/delx-agent-utilities?style=for-the-badge&labelColor=0F172A&color=FBBF24&logo=github" alt="GitHub stars" /></a>
 </p>
 
@@ -30,7 +30,7 @@
 - **Fast** — most tools < 100ms; networked tools < 5s with timeouts.
 - **MCP-native** — agent-readiness manifest, connection status, privacy audit.
 
-This package was extracted from the [Delx Protocol](https://delx.ai) MCP server so any AI builder can use the toolkit directly, without depending on the Delx runtime.
+This package was extracted from the Delx Protocol MCP server so any AI builder can use the toolkit directly, without depending on the Delx runtime. The public product and protocol context lives at [ontology.delx.ai/utilities](https://ontology.delx.ai/utilities).
 
 ## Install
 
@@ -143,7 +143,7 @@ src/delx_agent_utilities/
 
 ## Provenance
 
-Originally part of the [Delx Protocol](https://github.com/davidmosiah/delx-protocol) MCP server (private repo). Extracted on 2026-05-09 as a standalone open-source package so any AI builder can use the toolkit without depending on the Delx Protocol runtime.
+Originally part of the [Delx Protocol](https://ontology.delx.ai/protocol) MCP server. Extracted on 2026-05-09 as a standalone open-source package so any AI builder can use the toolkit without depending on the Delx Protocol runtime.
 
 The Delx Protocol itself (recovery / heartbeat / identity / governance primitives) remains closed-source; this package is the open utility layer beneath it.
 
@@ -163,4 +163,4 @@ If this toolkit helps your agent workflow, please [star the repo](https://github
 
 ## Author
 
-David Mosiah — [@delx369](https://x.com/delx369) — building the protocol layer for autonomous AI agents at [delx.ai](https://delx.ai).
+David Mosiah — [@delx369](https://x.com/delx369) — building the protocol layer for autonomous AI agents at [Delx](https://ontology.delx.ai).
