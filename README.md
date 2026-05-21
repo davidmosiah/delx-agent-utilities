@@ -155,6 +155,14 @@ PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Common cuts that would h
 - Splitting `_internal/_tools_web.py` per the v0.2.0 roadmap above.
 - Per-tool unit tests.
 
+## 📧 Contact & Support
+
+- 📨 **support@delx.ai** — general questions, integration help, partnerships
+- 🐛 **Bug reports / feature requests** — [GitHub Issues](https://github.com/davidmosiah/delx-agent-utilities/issues)
+- 🐦 **Updates** — [@delx369](https://x.com/delx369) on X
+- 🌐 **Site** — [wellness.delx.ai](https://wellness.delx.ai)
+
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
