@@ -25,8 +25,9 @@ from .schemas import (
     UTIL_TOOL_NAMES,
     UTIL_TOOL_SCHEMAS,
 )
+from .url_clean import url_canonicalize
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "SUPPORTED_CLIENTS",
@@ -38,5 +39,6 @@ __all__ = [
     "build_privacy_audit",
     "call_util_tool",
     "list_util_tool_schemas",
+    "url_canonicalize",
     "__version__",
 ]
