@@ -49,7 +49,8 @@ def test_agent_surfaces():
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
     assert audit["telemetry"] is False
-    assert any("rdap.org" in ep["name"] for ep in audit["third_party_endpoints"])
+    endpoint_names = {ep["name"] for ep in audit["third_party_endpoints"]}
+    assert "rdap.org" in endpoint_names
 
 
 @pytest.mark.asyncio
