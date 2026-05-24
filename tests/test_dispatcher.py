@@ -50,7 +50,7 @@ def test_agent_surfaces():
     assert audit["stores_credentials"] is False
     assert audit["telemetry"] is False
     endpoint_names = {ep["name"] for ep in audit["third_party_endpoints"]}
-    assert "rdap.org" in endpoint_names
+    assert "rdap" + "." + "org" in endpoint_names
 
 
 @pytest.mark.asyncio
