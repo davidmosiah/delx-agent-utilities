@@ -54,7 +54,7 @@ Homepage = "https://ontology.delx.ai/utilities"
 Repository = "https://github.com/davidmosiah/delx-agent-utilities"
 Issues = "https://github.com/davidmosiah/delx-agent-utilities/issues"
 Documentation = "https://ontology.delx.ai/docs/utilities"
-Email = "mailto:support@delx.ai"
+Support = "https://github.com/davidmosiah/delx-agent-utilities/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/delx_agent_utilities"]
 
