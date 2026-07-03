@@ -18,6 +18,8 @@
   <a href="https://github.com/davidmosiah/delx-agent-utilities/stargazers"><img src="https://img.shields.io/github/stars/davidmosiah/delx-agent-utilities?style=for-the-badge&labelColor=0F172A&color=FBBF24&logo=github" alt="GitHub stars" /></a>
 </p>
 
+<p align="center"><code>mcp-name: io.github.davidmosiah/delx-agent-utilities</code></p>
+
 ---
 
 ## What it is
