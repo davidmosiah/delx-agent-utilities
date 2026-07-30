@@ -7,6 +7,8 @@ and hosts the composite reports. The public dispatcher must stay identical.
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from delx_agent_utilities import call_util_tool
@@ -44,6 +46,62 @@ def test_composites_defined_on_facade():
         "_api_integration_readiness", "_login_surface_report", "_content_distribution_report",
     ):
         assert hasattr(_tools_web, name), f"composite missing from facade: {name}"
+
+
+@pytest.mark.asyncio
+async def test_x402_server_probe_runs_independent_checks_concurrently(monkeypatch):
+    active = 0
+    max_active = 0
+
+    async def fake_text_response(url, *, timeout_s):
+        nonlocal active, max_active
+        active += 1
+        max_active = max(max_active, active)
+        await asyncio.sleep(0.01)
+        active -= 1
+        return None, "synthetic unavailable"
+
+    monkeypatch.setattr(x402, "_fetch_text_response", fake_text_response)
+
+    result = await x402._x402_server_probe(
+        {"url": "https://example.com", "timeout": 8}
+    )
+
+    assert result["check_count"] == 5
+    assert max_active == 5
+
+
+@pytest.mark.asyncio
+async def test_x402_server_probe_reads_discovery_and_tools_concurrently(monkeypatch):
+    active = 0
+    max_active = 0
+
+    class ReachableResponse:
+        status_code = 200
+
+    async def fake_text_response(url, *, timeout_s):
+        return ReachableResponse(), ""
+
+    async def fake_json_response(url, *, timeout_s):
+        nonlocal active, max_active
+        active += 1
+        max_active = max(max_active, active)
+        await asyncio.sleep(0.01)
+        active -= 1
+        if url.endswith("/.well-known/x402"):
+            return ReachableResponse(), {"resources": ["one"]}, ""
+        return ReachableResponse(), {"count": 3}, ""
+
+    monkeypatch.setattr(x402, "_fetch_text_response", fake_text_response)
+    monkeypatch.setattr(x402, "_fetch_json_response", fake_json_response)
+
+    result = await x402._x402_server_probe(
+        {"url": "https://example.com", "timeout": 8}
+    )
+
+    assert result["resource_count"] == 1
+    assert result["tool_count"] == 3
+    assert max_active == 2
 
 
 @pytest.mark.asyncio

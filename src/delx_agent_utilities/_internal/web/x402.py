@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -20,40 +21,54 @@ async def _x402_server_probe(args: dict) -> dict:
     except ValueError as e:
         return {"error": str(e), "field": "timeout", "expected": "integer (1-15)"}
     origin = _origin_from_url(url)
-    checks: list[dict[str, Any]] = []
-    for name, path in [
+    check_specs = [
         ("x402_discovery", "/.well-known/x402"),
         ("status", "/api/v1/status"),
         ("tools", "/api/v1/tools?format=ultracompact"),
         ("reliability", "/api/v1/reliability"),
         ("openapi", "/spec/openapi.json"),
-    ]:
+    ]
+
+    async def run_check(name: str, path: str) -> dict[str, Any]:
         target = origin.rstrip("/") + path
         response, error = await _fetch_text_response(target, timeout_s=timeout_s)
-        checks.append(
-            {
-                "name": name,
-                "url": target,
-                "status": int(response.status_code) if response else 0,
-                "reachable": bool(response and 200 <= int(response.status_code) < 400),
-                "error": error or "",
-            }
-        )
-    resource_count = 0
-    tool_count = 0
+        return {
+            "name": name,
+            "url": target,
+            "status": int(response.status_code) if response else 0,
+            "reachable": bool(response and 200 <= int(response.status_code) < 400),
+            "error": error or "",
+        }
+
+    checks = await asyncio.gather(
+        *(run_check(name, path) for name, path in check_specs)
+    )
     x402_check = next((row for row in checks if row["name"] == "x402_discovery" and row["reachable"]), None)
-    if x402_check:
+    tools_check = next((row for row in checks if row["name"] == "tools" and row["reachable"]), None)
+
+    async def read_resource_count() -> int:
+        if not x402_check:
+            return 0
         _, payload, error = await _fetch_json_response(x402_check["url"], timeout_s=timeout_s)
         if not error and isinstance(payload, dict):
             resources = payload.get("resourceCatalog")
             if not isinstance(resources, list):
                 resources = payload.get("resources") or []
-            resource_count = len(resources)
-    tools_check = next((row for row in checks if row["name"] == "tools" and row["reachable"]), None)
-    if tools_check:
+            return len(resources)
+        return 0
+
+    async def read_tool_count() -> int:
+        if not tools_check:
+            return 0
         _, payload, error = await _fetch_json_response(tools_check["url"], timeout_s=timeout_s)
         if not error and isinstance(payload, dict):
-            tool_count = int(payload.get("count") or 0)
+            return int(payload.get("count") or 0)
+        return 0
+
+    resource_count, tool_count = await asyncio.gather(
+        read_resource_count(),
+        read_tool_count(),
+    )
     return {
         "url": origin,
         "reachable_count": sum(1 for row in checks if row["reachable"]),
