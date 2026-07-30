@@ -19,8 +19,8 @@ from delx_agent_utilities import (
 
 
 def test_registry_consistency():
-    assert len(UTIL_TOOL_NAMES) == 41
-    assert len(UTIL_TOOL_SCHEMAS) == 41
+    assert len(UTIL_TOOL_NAMES) == 42
+    assert len(UTIL_TOOL_SCHEMAS) == 42
     assert set(UTIL_TOOL_NAMES) == set(UTIL_TOOL_SCHEMAS.keys())
     for name in UTIL_TOOL_NAMES:
         assert name in UTIL_REQUIRED_PARAMS, f"required-params missing: {name}"
@@ -32,19 +32,19 @@ def test_registry_consistency():
 
 def test_list_util_tool_schemas_returns_all_tools():
     schemas = list_util_tool_schemas()
-    assert len(schemas) == 41
+    assert len(schemas) == 42
     assert all("name" in s for s in schemas)
 
 
 def test_agent_surfaces():
     manifest = build_agent_manifest()
     assert manifest["project"] == "delx-agent-utilities"
-    assert manifest["tool_count"] == 41
+    assert manifest["tool_count"] == 42
     assert "delx_utilities_connection_status" in manifest["recommended_first_calls"]
 
     status = build_connection_status({})
     assert status["ok"] is True
-    assert status["tool_count"] == 41
+    assert status["tool_count"] == 42
 
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
@@ -239,3 +239,31 @@ async def test_required_params_missing():
     result = await call_util_tool("util_url_health", {})
     assert "error" in result
     assert "url" in result["required"]
+
+
+@pytest.mark.asyncio
+async def test_loyalty_reward_quote_is_deterministic_and_ledger_ready():
+    result = await call_util_tool(
+        "util_loyalty_reward_quote",
+        {
+            "purchase_amount": "49.99",
+            "points_per_unit": "2",
+            "tier_multiplier": "1.5",
+            "bonus_points": 10,
+            "redemption_value_per_point": "0.01",
+            "event_id": "order-123",
+        },
+    )
+
+    assert result["base_points"] == 99
+    assert result["total_points"] == 158
+    assert result["estimated_reward_value"] == "1.580000"
+    assert result["effective_rebate_pct"] == "3.16"
+    assert result["stores_customer_state"] is False
+    assert result["ledger_instruction"] == {
+        "event_id": "order-123",
+        "operation": "credit",
+        "amount": 158,
+        "unit": "points",
+        "idempotency_required": True,
+    }

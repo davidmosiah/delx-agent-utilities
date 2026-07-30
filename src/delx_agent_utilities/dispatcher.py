@@ -31,6 +31,7 @@ from ._internal._tools_encoding import (
 )
 from ._internal._tools_http_codes import _http_codes
 from ._internal._tools_jwt_csv import _csv_to_json, _json_to_csv, _jwt_inspect
+from ._internal._tools_loyalty import _loyalty_reward_quote
 from ._internal._tools_web import (
     _api_health_report,
     _api_integration_readiness,
@@ -103,6 +104,7 @@ _HANDLERS: dict[str, Any] = {
     "util_api_integration_readiness": _api_integration_readiness,
     "util_login_surface_report": _login_surface_report,
     "util_content_distribution_report": _content_distribution_report,
+    "util_loyalty_reward_quote": _loyalty_reward_quote,
 }
 
 

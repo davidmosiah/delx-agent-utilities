@@ -349,6 +349,7 @@ COMPOSITE_PAID_UTILITY_TOOL_NAMES: list[str] = [
     "util_api_integration_readiness",
     "util_login_surface_report",
     "util_content_distribution_report",
+    "util_loyalty_reward_quote",
 ]
 
 UTIL_TOOL_NAMES.extend(ADVANCED_PAID_UTILITY_TOOL_NAMES)
@@ -376,6 +377,7 @@ UTIL_REQUIRED_PARAMS.update(
         "util_api_integration_readiness": ["url"],
         "util_login_surface_report": ["url"],
         "util_content_distribution_report": ["url"],
+        "util_loyalty_reward_quote": ["purchase_amount"],
     }
 )
 UTIL_TOOL_SCHEMAS.update(
@@ -555,6 +557,23 @@ UTIL_TOOL_SCHEMAS.update(
             "description": "Summarize how a site distributes content across Open Graph, feeds, socials, and crawl surface.",
             "inputSchema": {"type": "object", "properties": {"url": {"type": "string", "description": "Content or homepage URL"}, "timeout": {"type": "integer", "description": "Timeout in seconds (1-15)", "default": 8, "minimum": 1, "maximum": 15}}, "required": ["url"]},
         },
+        "util_loyalty_reward_quote": {
+            "name": "util_loyalty_reward_quote",
+            "description": "Calculate loyalty points, reward value, effective rebate, and a ledger-ready credit instruction without storing customer state.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "purchase_amount": {"type": "number", "minimum": 0, "description": "Eligible purchase amount."},
+                    "currency": {"type": "string", "minLength": 3, "maxLength": 3, "default": "USD"},
+                    "points_per_unit": {"type": "number", "minimum": 0, "default": 1},
+                    "tier_multiplier": {"type": "number", "minimum": 0, "default": 1},
+                    "bonus_points": {"type": "integer", "minimum": 0, "default": 0},
+                    "redemption_value_per_point": {"type": "number", "minimum": 0, "default": 0.01},
+                    "event_id": {"type": "string", "description": "Optional caller-owned idempotency identifier for the downstream ledger."}
+                },
+                "required": ["purchase_amount"],
+                "additionalProperties": False
+            },
+        },
     }
 )
-

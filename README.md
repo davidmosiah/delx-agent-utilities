@@ -24,7 +24,7 @@
 
 ## What it is
 
-41 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
+42 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
 
 - **Stateless** — every call is independent; no session, no cache, no DB.
 - **No API keys** — public endpoints only (rdap.org, dns.google, plus user-supplied URLs).
@@ -56,7 +56,7 @@ CLI entrypoints: `delx-agent-utilities`, `delx-utils` (alias), `delx-utils-mcp` 
 }
 ```
 
-41 tools become available immediately, plus three agent-readiness surfaces:
+42 tools become available immediately, plus three agent-readiness surfaces:
 
 - `delx_utilities_manifest`
 - `delx_utilities_connection_status`
@@ -84,7 +84,7 @@ schemas = list_util_tool_schemas()
 print(f"{len(schemas)} tools available")
 ```
 
-## The 41 tools
+## The 42 tools
 
 ### Encoding & parsing (12)
 `util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
@@ -103,6 +103,10 @@ print(f"{len(schemas)} tools available")
 
 ### Composite reports (8)
 `util_website_intelligence_report`, `util_domain_trust_report`, `util_docs_site_map`, `util_pricing_page_extract`, `util_company_contact_pack`, `util_api_integration_readiness`, `util_login_surface_report`, `util_content_distribution_report`
+
+### Commerce workflows
+
+`util_loyalty_reward_quote`
 
 Each tool's full input schema is available via `delx-utils show <tool>` or `UTIL_TOOL_SCHEMAS["<tool>"]` in Python.
 
