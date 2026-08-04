@@ -19,8 +19,8 @@ from delx_agent_utilities import (
 
 
 def test_registry_consistency():
-    assert len(UTIL_TOOL_NAMES) == 45
-    assert len(UTIL_TOOL_SCHEMAS) == 45
+    assert len(UTIL_TOOL_NAMES) == 49
+    assert len(UTIL_TOOL_SCHEMAS) == 49
     assert set(UTIL_TOOL_NAMES) == set(UTIL_TOOL_SCHEMAS.keys())
     for name in UTIL_TOOL_NAMES:
         assert name in UTIL_REQUIRED_PARAMS, f"required-params missing: {name}"
@@ -32,19 +32,19 @@ def test_registry_consistency():
 
 def test_list_util_tool_schemas_returns_all_tools():
     schemas = list_util_tool_schemas()
-    assert len(schemas) == 45
+    assert len(schemas) == 49
     assert all("name" in s for s in schemas)
 
 
 def test_agent_surfaces():
     manifest = build_agent_manifest()
     assert manifest["project"] == "delx-agent-utilities"
-    assert manifest["tool_count"] == 45
+    assert manifest["tool_count"] == 49
     assert "delx_utilities_connection_status" in manifest["recommended_first_calls"]
 
     status = build_connection_status({})
     assert status["ok"] is True
-    assert status["tool_count"] == 45
+    assert status["tool_count"] == 49
 
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
@@ -321,3 +321,38 @@ async def test_loyalty_reward_quote_is_deterministic_and_ledger_ready():
         "unit": "points",
         "idempotency_required": True,
     }
+
+
+@pytest.mark.asyncio
+async def test_vin_decode_honda_sample():
+    result = await call_util_tool("util_vin_decode", {"vin": "1HGCM82633A004352"})
+    assert result.get("error") is None, result
+    assert result["decoded"]["make"].upper() == "HONDA"
+    assert result["decoded"]["model_year"] == "2003"
+    assert "NHTSA" in result["source"]["provider"]
+
+
+@pytest.mark.asyncio
+async def test_wmi_decode_honda():
+    result = await call_util_tool("util_wmi_decode", {"wmi": "1HG"})
+    assert result.get("error") is None, result
+    assert "HONDA" in (result.get("make") or "").upper() or "HONDA" in (result.get("manufacturer_name") or "").upper()
+
+
+@pytest.mark.asyncio
+async def test_lei_lookup_bloomberg():
+    result = await call_util_tool("util_lei_lookup", {"lei": "5493001KJTIIGC8Y1R12"})
+    assert result.get("error") is None, result
+    assert result["found"] is True
+    assert "Bloomberg" in (result["entity"]["legal_name"] or "")
+
+
+@pytest.mark.asyncio
+async def test_inflation_calculator_cpi():
+    result = await call_util_tool(
+        "util_inflation_calculator",
+        {"amount": 100, "from_year": 2020, "to_year": 2024, "series": "cpi_u"},
+    )
+    assert result.get("error") is None, result
+    assert result["revalued_amount"] > 100
+    assert result["series_id"] == "CUUR0000SA0"

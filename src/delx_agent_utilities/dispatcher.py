@@ -37,6 +37,12 @@ from ._internal._tools_time_units import (
     _timezone_lookup,
     _unit_convert,
 )
+from ._internal._tools_public_data import (
+    _inflation_calculator,
+    _lei_lookup,
+    _vin_decode,
+    _wmi_decode,
+)
 from ._internal._tools_web import (
     _api_health_report,
     _api_integration_readiness,
@@ -81,6 +87,10 @@ _HANDLERS: dict[str, Any] = {
     "util_timezone_lookup": _timezone_lookup,
     "util_unit_convert": _unit_convert,
     "util_business_days": _business_days,
+    "util_vin_decode": _vin_decode,
+    "util_wmi_decode": _wmi_decode,
+    "util_lei_lookup": _lei_lookup,
+    "util_inflation_calculator": _inflation_calculator,
     "util_page_extract": _page_extract,
     "util_open_graph": _open_graph,
     "util_links_extract": _links_extract,

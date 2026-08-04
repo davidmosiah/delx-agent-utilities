@@ -40,6 +40,10 @@ UTIL_TOOL_NAMES: list[str] = [
     "util_timezone_lookup",
     "util_unit_convert",
     "util_business_days",
+    "util_vin_decode",
+    "util_wmi_decode",
+    "util_lei_lookup",
+    "util_inflation_calculator",
 ]
 
 UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
@@ -56,6 +60,10 @@ UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
     "util_timezone_lookup": ["timezone"],
     "util_unit_convert": [],
     "util_business_days": ["start_date", "end_date"],
+    "util_vin_decode": ["vin"],
+    "util_wmi_decode": ["wmi"],
+    "util_lei_lookup": ["lei"],
+    "util_inflation_calculator": ["amount", "from_year", "to_year"],
 }
 
 UTIL_TOOL_SCHEMAS: dict[str, dict] = {
@@ -226,6 +234,57 @@ UTIL_TOOL_SCHEMAS: dict[str, dict] = {
                 },
             },
             "required": ["start_date", "end_date"],
+        },
+    },
+    "util_vin_decode": {
+        "name": "util_vin_decode",
+        "description": "Decode a 17-character VIN via NHTSA vPIC into make, model, year, body class, and related fields with attribution.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "vin": {"type": "string", "description": "17-character Vehicle Identification Number"},
+            },
+            "required": ["vin"],
+        },
+    },
+    "util_wmi_decode": {
+        "name": "util_wmi_decode",
+        "description": "Decode a 3-character WMI (World Manufacturer Identifier) via NHTSA vPIC into manufacturer and vehicle type.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "wmi": {"type": "string", "description": "3-character WMI (often VIN prefix)"},
+            },
+            "required": ["wmi"],
+        },
+    },
+    "util_lei_lookup": {
+        "name": "util_lei_lookup",
+        "description": "Look up a 20-character Legal Entity Identifier (LEI) via GLEIF: legal name, status, jurisdiction, registration.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "lei": {"type": "string", "description": "20-character LEI"},
+            },
+            "required": ["lei"],
+        },
+    },
+    "util_inflation_calculator": {
+        "name": "util_inflation_calculator",
+        "description": "Revalue an amount between two years using U.S. BLS CPI (CPI-U default). Informational only.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "amount": {"type": "number", "description": "Amount in from_year dollars"},
+                "from_year": {"type": "integer", "description": "Start calendar year"},
+                "to_year": {"type": "integer", "description": "End calendar year"},
+                "series": {
+                    "type": "string",
+                    "description": "cpi_u (default), cpi_w, or a BLS series id",
+                    "default": "cpi_u",
+                },
+            },
+            "required": ["amount", "from_year", "to_year"],
         },
     },
 }
