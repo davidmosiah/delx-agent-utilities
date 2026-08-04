@@ -44,6 +44,14 @@ UTIL_TOOL_NAMES: list[str] = [
     "util_wmi_decode",
     "util_lei_lookup",
     "util_inflation_calculator",
+    "util_holidays",
+    "util_slugify",
+    "util_mime_lookup",
+    "util_color_convert",
+    "util_ip_classify",
+    "util_cidr_contains",
+    "util_ulid_generate",
+    "util_html_strip",
 ]
 
 UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
@@ -63,6 +71,14 @@ UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
     "util_vin_decode": ["vin"],
     "util_wmi_decode": ["wmi"],
     "util_lei_lookup": ["lei"],
+    "util_holidays": ["year"],
+    "util_slugify": ["text"],
+    "util_mime_lookup": ["extension"],
+    "util_color_convert": ["color"],
+    "util_ip_classify": ["ip"],
+    "util_cidr_contains": ["network", "ip"],
+    "util_ulid_generate": [],
+    "util_html_strip": ["html"],
     "util_inflation_calculator": ["amount", "from_year", "to_year"],
 }
 
@@ -287,6 +303,103 @@ UTIL_TOOL_SCHEMAS: dict[str, dict] = {
             "required": ["amount", "from_year", "to_year"],
         },
     },
+    "util_holidays": {
+        "name": "util_holidays",
+        "description": "List observed US federal holidays for a year.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "year": {"type": "integer", "minimum": 1971, "maximum": 2100},
+                "calendar": {"type": "string", "enum": ["us_federal"], "default": "us_federal"}
+            },
+            "required": ["year"],
+            "additionalProperties": False
+        }
+    },
+    "util_slugify": {
+        "name": "util_slugify",
+        "description": "Convert text to a URL-safe slug.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "text": {"type": "string"},
+                "separator": {"type": "string", "default": "-"},
+                "lowercase": {"type": "boolean", "default": True},
+                "max_length": {"type": "integer", "minimum": 1, "maximum": 4000}
+            },
+            "required": ["text"],
+            "additionalProperties": False
+        }
+    },
+    "util_mime_lookup": {
+        "name": "util_mime_lookup",
+        "description": "Look up a common MIME type from a file extension or filename.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "extension": {"type": "string"},
+                "filename": {"type": "string"}
+            },
+            "additionalProperties": False
+        }
+    },
+    "util_color_convert": {
+        "name": "util_color_convert",
+        "description": "Convert #hex or rgb() colors to hex/rgb/hsl.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"color": {"type": "string"}},
+            "required": ["color"],
+            "additionalProperties": False
+        }
+    },
+    "util_ip_classify": {
+        "name": "util_ip_classify",
+        "description": "Classify an IPv4/IPv6 address as private, loopback, global, etc. No geolocation.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {"ip": {"type": "string"}},
+            "required": ["ip"],
+            "additionalProperties": False
+        }
+    },
+    "util_cidr_contains": {
+        "name": "util_cidr_contains",
+        "description": "Check whether an IP address is inside a CIDR network.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "network": {"type": "string"},
+                "ip": {"type": "string"}
+            },
+            "required": ["network", "ip"],
+            "additionalProperties": False
+        }
+    },
+    "util_ulid_generate": {
+        "name": "util_ulid_generate",
+        "description": "Generate one or more Crockford Base32 ULIDs.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "count": {"type": "integer", "minimum": 1, "maximum": 20, "default": 1}
+            },
+            "additionalProperties": False
+        }
+    },
+    "util_html_strip": {
+        "name": "util_html_strip",
+        "description": "Strip HTML tags to plain text (best-effort, no browser).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "html": {"type": "string"},
+                "max_length": {"type": "integer", "minimum": 1, "maximum": 100000}
+            },
+            "required": ["html"],
+            "additionalProperties": False
+        }
+    }
 }
 
 PAID_UTILITY_TOOL_NAMES: list[str] = [

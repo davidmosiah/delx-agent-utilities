@@ -37,6 +37,16 @@ from ._internal._tools_time_units import (
     _timezone_lookup,
     _unit_convert,
 )
+from ._internal._tools_text_net import (
+    _cidr_contains,
+    _color_convert,
+    _holidays,
+    _html_strip,
+    _ip_classify,
+    _mime_lookup,
+    _slugify,
+    _ulid_generate,
+)
 from ._internal._tools_public_data import (
     _inflation_calculator,
     _lei_lookup,
@@ -91,6 +101,14 @@ _HANDLERS: dict[str, Any] = {
     "util_wmi_decode": _wmi_decode,
     "util_lei_lookup": _lei_lookup,
     "util_inflation_calculator": _inflation_calculator,
+    "util_holidays": _holidays,
+    "util_slugify": _slugify,
+    "util_mime_lookup": _mime_lookup,
+    "util_color_convert": _color_convert,
+    "util_ip_classify": _ip_classify,
+    "util_cidr_contains": _cidr_contains,
+    "util_ulid_generate": _ulid_generate,
+    "util_html_strip": _html_strip,
     "util_page_extract": _page_extract,
     "util_open_graph": _open_graph,
     "util_links_extract": _links_extract,
