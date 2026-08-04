@@ -64,6 +64,20 @@ UTIL_TOOL_NAMES: list[str] = [
     "util_luhn_check",
     "util_isbn_check",
     "util_diff_lines",
+    "util_levenshtein",
+    "util_normalize_whitespace",
+    "util_extract_urls",
+    "util_extract_emails",
+    "util_url_encode",
+    "util_hex_convert",
+    "util_number_base",
+    "util_dedupe_lines",
+    "util_sort_lines",
+    "util_random_int",
+    "util_rot13",
+    "util_text_truncate",
+    "util_reading_time",
+    "util_random_choice",
 
 ]
 
@@ -104,6 +118,21 @@ UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
     "util_luhn_check": ['number'],
     "util_isbn_check": ['isbn'],
     "util_diff_lines": ['a', 'b'],
+    "util_levenshtein": ['a', 'b'],
+    "util_normalize_whitespace": ['text'],
+    "util_extract_urls": ['text'],
+    "util_extract_emails": ['text'],
+    "util_url_encode": ['text'],
+    "util_hex_convert": ['text'],
+    "util_number_base": ['value'],
+    "util_dedupe_lines": ['text'],
+    "util_sort_lines": ['text'],
+    "util_random_int": [],
+    "util_rot13": ['text'],
+    "util_text_truncate": ['text', 'max_length'],
+    "util_reading_time": ['text'],
+    "util_random_choice": ['items'],
+
 
     "util_inflation_calculator": ["amount", "from_year", "to_year"],
 }
@@ -488,7 +517,147 @@ UTIL_TOOL_SCHEMAS: dict[str, dict] = {
         "inputSchema": {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "string"}}, "required": ["a", "b"], "additionalProperties": False}
     }
 
-}
+,
+    "util_levenshtein": {
+        "name": "util_levenshtein",
+        "description": "Compute Levenshtein edit distance and similarity between two strings.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['a', 'b'],
+            "additionalProperties": False,
+        },
+    },
+    "util_normalize_whitespace": {
+        "name": "util_normalize_whitespace",
+        "description": "Normalize whitespace in text (collapse, flat, or trim).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_extract_urls": {
+        "name": "util_extract_urls",
+        "description": "Extract HTTP/HTTPS URLs from text.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_extract_emails": {
+        "name": "util_extract_emails",
+        "description": "Extract email-like addresses from text (regex only).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_url_encode": {
+        "name": "util_url_encode",
+        "description": "URL-encode or URL-decode text.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_hex_convert": {
+        "name": "util_hex_convert",
+        "description": "Encode text to hex or decode hex to text.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_number_base": {
+        "name": "util_number_base",
+        "description": "Convert a number between bases 2-36.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['value'],
+            "additionalProperties": False,
+        },
+    },
+    "util_dedupe_lines": {
+        "name": "util_dedupe_lines",
+        "description": "Remove duplicate lines from text.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_sort_lines": {
+        "name": "util_sort_lines",
+        "description": "Sort lines of text (optionally numeric or reverse).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_random_int": {
+        "name": "util_random_int",
+        "description": "Generate cryptographically secure random integers in a range.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False,
+        },
+    },
+    "util_rot13": {
+        "name": "util_rot13",
+        "description": "Apply ROT13 to Latin letters in text.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_text_truncate": {
+        "name": "util_text_truncate",
+        "description": "Truncate text to a max length with optional ellipsis.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text', 'max_length'],
+            "additionalProperties": False,
+        },
+    },
+    "util_reading_time": {
+        "name": "util_reading_time",
+        "description": "Estimate reading time from word count.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['text'],
+            "additionalProperties": False,
+        },
+    },
+    "util_random_choice": {
+        "name": "util_random_choice",
+        "description": "Pick one or more items at random without replacement.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": ['items'],
+            "additionalProperties": False,
+        },
+    }}
 
 PAID_UTILITY_TOOL_NAMES: list[str] = [
     "util_page_extract",
