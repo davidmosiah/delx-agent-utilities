@@ -52,6 +52,19 @@ UTIL_TOOL_NAMES: list[str] = [
     "util_cidr_contains",
     "util_ulid_generate",
     "util_html_strip",
+    "util_semver_compare",
+    "util_word_count",
+    "util_markdown_to_text",
+    "util_duration_parse",
+    "util_case_convert",
+    "util_query_string",
+    "util_url_join",
+    "util_percent_change",
+    "util_clamp",
+    "util_luhn_check",
+    "util_isbn_check",
+    "util_diff_lines",
+
 ]
 
 UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
@@ -79,6 +92,19 @@ UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
     "util_cidr_contains": ["network", "ip"],
     "util_ulid_generate": [],
     "util_html_strip": ["html"],
+    "util_semver_compare": ['a', 'b'],
+    "util_word_count": ['text'],
+    "util_markdown_to_text": ['markdown'],
+    "util_duration_parse": ['duration'],
+    "util_case_convert": ['text'],
+    "util_query_string": [],
+    "util_url_join": ['base'],
+    "util_percent_change": ['from', 'to'],
+    "util_clamp": ['value', 'min', 'max'],
+    "util_luhn_check": ['number'],
+    "util_isbn_check": ['isbn'],
+    "util_diff_lines": ['a', 'b'],
+
     "util_inflation_calculator": ["amount", "from_year", "to_year"],
 }
 
@@ -399,7 +425,69 @@ UTIL_TOOL_SCHEMAS: dict[str, dict] = {
             "required": ["html"],
             "additionalProperties": False
         }
+    },
+
+    "util_semver_compare": {
+        "name": "util_semver_compare",
+        "description": "Compare two semantic versions (major.minor.patch).",
+        "inputSchema": {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "string"}}, "required": ["a", "b"], "additionalProperties": False}
+    },
+    "util_word_count": {
+        "name": "util_word_count",
+        "description": "Count words, characters, lines and paragraphs in text.",
+        "inputSchema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"], "additionalProperties": False}
+    },
+    "util_markdown_to_text": {
+        "name": "util_markdown_to_text",
+        "description": "Strip markdown formatting to plain text (best-effort).",
+        "inputSchema": {"type": "object", "properties": {"markdown": {"type": "string"}, "max_length": {"type": "integer"}}, "required": ["markdown"], "additionalProperties": False}
+    },
+    "util_duration_parse": {
+        "name": "util_duration_parse",
+        "description": "Parse human durations like 1h30m into seconds/milliseconds.",
+        "inputSchema": {"type": "object", "properties": {"duration": {"type": "string"}}, "required": ["duration"], "additionalProperties": False}
+    },
+    "util_case_convert": {
+        "name": "util_case_convert",
+        "description": "Convert text between snake, kebab, camel, pascal, constant, title cases.",
+        "inputSchema": {"type": "object", "properties": {"text": {"type": "string"}, "case": {"type": "string"}}, "required": ["text"], "additionalProperties": False}
+    },
+    "util_query_string": {
+        "name": "util_query_string",
+        "description": "Parse or build URL query strings.",
+        "inputSchema": {"type": "object", "properties": {"action": {"type": "string"}, "query": {"type": "string"}, "params": {"type": "object"}}, "additionalProperties": False}
+    },
+    "util_url_join": {
+        "name": "util_url_join",
+        "description": "Join a base URL with a relative path or href.",
+        "inputSchema": {"type": "object", "properties": {"base": {"type": "string"}, "path": {"type": "string"}}, "required": ["base"], "additionalProperties": False}
+    },
+    "util_percent_change": {
+        "name": "util_percent_change",
+        "description": "Compute absolute and percent change between two numbers.",
+        "inputSchema": {"type": "object", "properties": {"from": {"type": "number"}, "to": {"type": "number"}}, "required": ["from", "to"], "additionalProperties": False}
+    },
+    "util_clamp": {
+        "name": "util_clamp",
+        "description": "Clamp a number between min and max.",
+        "inputSchema": {"type": "object", "properties": {"value": {"type": "number"}, "min": {"type": "number"}, "max": {"type": "number"}}, "required": ["value", "min", "max"], "additionalProperties": False}
+    },
+    "util_luhn_check": {
+        "name": "util_luhn_check",
+        "description": "Validate a digit string with the Luhn checksum (does not prove a card is real).",
+        "inputSchema": {"type": "object", "properties": {"number": {"type": "string"}}, "required": ["number"], "additionalProperties": False}
+    },
+    "util_isbn_check": {
+        "name": "util_isbn_check",
+        "description": "Validate ISBN-10 or ISBN-13 checksums.",
+        "inputSchema": {"type": "object", "properties": {"isbn": {"type": "string"}}, "required": ["isbn"], "additionalProperties": False}
+    },
+    "util_diff_lines": {
+        "name": "util_diff_lines",
+        "description": "Line-level diff between two texts (bounded LCS).",
+        "inputSchema": {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "string"}}, "required": ["a", "b"], "additionalProperties": False}
     }
+
 }
 
 PAID_UTILITY_TOOL_NAMES: list[str] = [
