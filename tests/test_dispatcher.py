@@ -19,8 +19,8 @@ from delx_agent_utilities import (
 
 
 def test_registry_consistency():
-    assert len(UTIL_TOOL_NAMES) == 42
-    assert len(UTIL_TOOL_SCHEMAS) == 42
+    assert len(UTIL_TOOL_NAMES) == 45
+    assert len(UTIL_TOOL_SCHEMAS) == 45
     assert set(UTIL_TOOL_NAMES) == set(UTIL_TOOL_SCHEMAS.keys())
     for name in UTIL_TOOL_NAMES:
         assert name in UTIL_REQUIRED_PARAMS, f"required-params missing: {name}"
@@ -32,19 +32,19 @@ def test_registry_consistency():
 
 def test_list_util_tool_schemas_returns_all_tools():
     schemas = list_util_tool_schemas()
-    assert len(schemas) == 42
+    assert len(schemas) == 45
     assert all("name" in s for s in schemas)
 
 
 def test_agent_surfaces():
     manifest = build_agent_manifest()
     assert manifest["project"] == "delx-agent-utilities"
-    assert manifest["tool_count"] == 42
+    assert manifest["tool_count"] == 45
     assert "delx_utilities_connection_status" in manifest["recommended_first_calls"]
 
     status = build_connection_status({})
     assert status["ok"] is True
-    assert status["tool_count"] == 42
+    assert status["tool_count"] == 45
 
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
@@ -136,6 +136,60 @@ async def test_http_codes_lookup():
     result = await call_util_tool("util_http_codes", {"code": 418})
     assert result["code"] == 418
     assert "teapot" in result["name"].lower() or "joke" in result["description"].lower()
+
+
+@pytest.mark.asyncio
+async def test_timezone_lookup_utc():
+    result = await call_util_tool(
+        "util_timezone_lookup",
+        {"timezone": "UTC", "at": "2026-01-15T12:00:00Z"},
+    )
+    assert result.get("error") is None
+    assert result["timezone"] == "UTC"
+    assert result["offset"] == "+00:00"
+    assert result["is_dst"] is False
+    assert "local_time" in result
+
+
+@pytest.mark.asyncio
+async def test_unit_convert_length_and_temp():
+    single = await call_util_tool(
+        "util_unit_convert",
+        {"value": 1, "from_unit": "km", "to_unit": "mi"},
+    )
+    assert single["ok_count"] == 1
+    assert abs(single["conversions"][0]["result"] - 0.621371) < 0.001
+
+    batch = await call_util_tool(
+        "util_unit_convert",
+        {
+            "conversions": [
+                {"value": 0, "from_unit": "c", "to_unit": "f"},
+                {"value": 1000, "from_unit": "g", "to_unit": "kg"},
+            ]
+        },
+    )
+    assert batch["ok_count"] == 2
+    assert abs(batch["conversions"][0]["result"] - 32.0) < 1e-9
+    assert abs(batch["conversions"][1]["result"] - 1.0) < 1e-9
+
+
+@pytest.mark.asyncio
+async def test_business_days_weekdays_and_us_federal():
+    weekdays = await call_util_tool(
+        "util_business_days",
+        {"start_date": "2026-01-05", "end_date": "2026-01-09", "calendar": "weekdays"},
+    )
+    assert weekdays["business_day_count"] == 5  # Mon–Fri
+
+    # 2026-07-03 Fri, 2026-07-04 Sat (Independence observed Fri 7/3? wait July 4 2026 is Saturday → observed Friday July 3)
+    fed = await call_util_tool(
+        "util_business_days",
+        {"start_date": "2026-07-01", "end_date": "2026-07-07", "calendar": "us_federal"},
+    )
+    assert fed["calendar"] == "us_federal"
+    assert fed["business_day_count"] < fed["calendar_day_count"]
+    assert "2026-07-03" not in fed["business_days"]  # Independence observed
 
 
 @pytest.mark.asyncio

@@ -32,6 +32,11 @@ from ._internal._tools_encoding import (
 from ._internal._tools_http_codes import _http_codes
 from ._internal._tools_jwt_csv import _csv_to_json, _json_to_csv, _jwt_inspect
 from ._internal._tools_loyalty import _loyalty_reward_quote
+from ._internal._tools_time_units import (
+    _business_days,
+    _timezone_lookup,
+    _unit_convert,
+)
 from ._internal._tools_web import (
     _api_health_report,
     _api_integration_readiness,
@@ -73,6 +78,9 @@ _HANDLERS: dict[str, Any] = {
     "util_regex_test": _regex_test,
     "util_cron_describe": _cron_describe,
     "util_http_codes": _http_codes,
+    "util_timezone_lookup": _timezone_lookup,
+    "util_unit_convert": _unit_convert,
+    "util_business_days": _business_days,
     "util_page_extract": _page_extract,
     "util_open_graph": _open_graph,
     "util_links_extract": _links_extract,

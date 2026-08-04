@@ -24,7 +24,7 @@
 
 ## What it is
 
-42 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
+45 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
 
 - **Stateless** — every call is independent; no session, no cache, no DB.
 - **No API keys** — public endpoints only (rdap.org, dns.google, plus user-supplied URLs).
@@ -56,7 +56,7 @@ CLI entrypoints: `delx-agent-utilities`, `delx-utils` (alias), `delx-utils-mcp` 
 }
 ```
 
-42 tools become available immediately, plus three agent-readiness surfaces:
+45 tools become available immediately, plus three agent-readiness surfaces:
 
 - `delx_utilities_manifest`
 - `delx_utilities_connection_status`
@@ -84,10 +84,10 @@ schemas = list_util_tool_schemas()
 print(f"{len(schemas)} tools available")
 ```
 
-## The 42 tools
+## The 45 tools
 
 ### Encoding & parsing (12)
-`util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
+`util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_timezone_lookup`, `util_unit_convert`, `util_business_days`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
 
 ### Web extract (6)
 `util_page_extract`, `util_open_graph`, `util_links_extract`, `util_forms_extract`, `util_contact_extract`, `util_feed_discover`

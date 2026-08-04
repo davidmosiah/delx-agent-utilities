@@ -1,6 +1,6 @@
 """Delx Agent Utilities — Stateless utility tools for AI agents.
 
-42 deterministic, session-free utilities for everyday agent operations:
+45 deterministic, session-free utilities for everyday agent operations:
 URL/HTTP intelligence, MCP readiness, DNS/RDAP, x402 server probing, JWT/JSON/CSV
 parsing, encoding/hashing, regex, cron description, and more.
 

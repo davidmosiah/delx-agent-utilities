@@ -37,6 +37,9 @@ UTIL_TOOL_NAMES: list[str] = [
     "util_regex_test",
     "util_cron_describe",
     "util_http_codes",
+    "util_timezone_lookup",
+    "util_unit_convert",
+    "util_business_days",
 ]
 
 UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
@@ -50,6 +53,9 @@ UTIL_REQUIRED_PARAMS: dict[str, list[str]] = {
     "util_regex_test": ["pattern", "text"],
     "util_cron_describe": ["expression"],
     "util_http_codes": [],
+    "util_timezone_lookup": ["timezone"],
+    "util_unit_convert": [],
+    "util_business_days": ["start_date", "end_date"],
 }
 
 UTIL_TOOL_SCHEMAS: dict[str, dict] = {
@@ -166,6 +172,60 @@ UTIL_TOOL_SCHEMAS: dict[str, dict] = {
             "properties": {
                 "code": {"type": "integer", "description": "HTTP status code (100-599). Omit for full reference."},
             },
+        },
+    },
+    "util_timezone_lookup": {
+        "name": "util_timezone_lookup",
+        "description": "Resolve an IANA timezone to offset, abbreviation, DST flag, and local time for a given instant (or now).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "timezone": {
+                    "type": "string",
+                    "description": "IANA timezone id, e.g. America/New_York or Europe/Lisbon",
+                },
+                "at": {
+                    "type": "string",
+                    "description": "Optional instant: ISO 8601, Unix seconds, or 'now' (default)",
+                    "default": "now",
+                },
+            },
+            "required": ["timezone"],
+        },
+    },
+    "util_unit_convert": {
+        "name": "util_unit_convert",
+        "description": "Convert values between units (length, mass, volume, time, data, temperature). Supports one conversion or a batch of up to 100.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "value": {"type": "number", "description": "Single value to convert (or use conversions[])"},
+                "from_unit": {"type": "string", "description": "Source unit, e.g. km, lb, c, mib"},
+                "to_unit": {"type": "string", "description": "Target unit, e.g. mi, kg, f, gib"},
+                "conversions": {
+                    "type": "array",
+                    "description": "Optional batch of {value, from_unit, to_unit} (max 100)",
+                    "items": {"type": "object"},
+                },
+            },
+        },
+    },
+    "util_business_days": {
+        "name": "util_business_days",
+        "description": "Count and list business days between two inclusive ISO dates. Calendars: weekdays (Mon–Fri) or us_federal (excludes observed US federal holidays).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "start_date": {"type": "string", "description": "Inclusive start date YYYY-MM-DD"},
+                "end_date": {"type": "string", "description": "Inclusive end date YYYY-MM-DD"},
+                "calendar": {
+                    "type": "string",
+                    "enum": ["weekdays", "us_federal"],
+                    "default": "weekdays",
+                    "description": "Holiday calendar",
+                },
+            },
+            "required": ["start_date", "end_date"],
         },
     },
 }
