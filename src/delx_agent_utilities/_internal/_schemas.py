@@ -813,6 +813,18 @@ UTIL_TOOL_SCHEMAS.update(
     }
 )
 
+# Sales-led local preflights. Product pricing and public x402 ownership remain
+# in Delx Commerce; this package supplies only reusable stateless handlers.
+from ._tools_sales_led import (  # noqa: E402
+    SALES_LED_REQUIRED_PARAMS,
+    SALES_LED_TOOL_NAMES,
+    SALES_LED_TOOL_SCHEMAS,
+)
+
+UTIL_TOOL_NAMES.extend(SALES_LED_TOOL_NAMES)
+UTIL_REQUIRED_PARAMS.update(SALES_LED_REQUIRED_PARAMS)
+UTIL_TOOL_SCHEMAS.update(SALES_LED_TOOL_SCHEMAS)
+
 ADVANCED_PAID_UTILITY_TOOL_NAMES: list[str] = [
     "util_tls_inspect",
     "util_security_txt_inspect",

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add six local-first preflights derived from aggregate external Commerce sales:
+  reproducible sampling, Base gas budget, DNS/header diffs, x402 payment policy,
+  and image delivery contract validation.
+- Correct stale public tool counts and make the BLS smoke test deterministic.
+
 ## 0.1.3 - 2026-07-30
 
 - Add a deterministic loyalty reward quote with ledger-ready output.

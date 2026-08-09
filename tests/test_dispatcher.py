@@ -19,8 +19,8 @@ from delx_agent_utilities import (
 
 
 def test_registry_consistency():
-    assert len(UTIL_TOOL_NAMES) == 49
-    assert len(UTIL_TOOL_SCHEMAS) == 49
+    assert len(UTIL_TOOL_NAMES) == 89
+    assert len(UTIL_TOOL_SCHEMAS) == 89
     assert set(UTIL_TOOL_NAMES) == set(UTIL_TOOL_SCHEMAS.keys())
     for name in UTIL_TOOL_NAMES:
         assert name in UTIL_REQUIRED_PARAMS, f"required-params missing: {name}"
@@ -32,19 +32,19 @@ def test_registry_consistency():
 
 def test_list_util_tool_schemas_returns_all_tools():
     schemas = list_util_tool_schemas()
-    assert len(schemas) == 49
+    assert len(schemas) == 89
     assert all("name" in s for s in schemas)
 
 
 def test_agent_surfaces():
     manifest = build_agent_manifest()
     assert manifest["project"] == "delx-agent-utilities"
-    assert manifest["tool_count"] == 49
+    assert manifest["tool_count"] == 89
     assert "delx_utilities_connection_status" in manifest["recommended_first_calls"]
 
     status = build_connection_status({})
     assert status["ok"] is True
-    assert status["tool_count"] == 49
+    assert status["tool_count"] == 89
 
     audit = build_privacy_audit()
     assert audit["stores_credentials"] is False
@@ -348,7 +348,41 @@ async def test_lei_lookup_bloomberg():
 
 
 @pytest.mark.asyncio
-async def test_inflation_calculator_cpi():
+async def test_inflation_calculator_cpi(monkeypatch):
+    from delx_agent_utilities._internal import _tools_public_data as public_data
+
+    class FakeResponse:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "status": "REQUEST_SUCCEEDED",
+                "Results": {
+                    "series": [
+                        {
+                            "data": [
+                                {"year": "2020", "period": "M13", "value": "258.8"},
+                                {"year": "2024", "period": "M13", "value": "313.7"},
+                            ]
+                        }
+                    ]
+                },
+            }
+
+    class FakeClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_args):
+            return None
+
+        async def get(self, *_args, **_kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(public_data.httpx, "AsyncClient", lambda **_kwargs: FakeClient())
     result = await call_util_tool(
         "util_inflation_calculator",
         {"amount": 100, "from_year": 2020, "to_year": 2024, "series": "cpi_u"},

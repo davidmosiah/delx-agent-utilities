@@ -24,7 +24,7 @@
 
 ## What it is
 
-45 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
+89 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
 
 - **Stateless** — every call is independent; no session, no cache, no DB.
 - **No API keys** — public endpoints only (rdap.org, dns.google, plus user-supplied URLs).
@@ -56,7 +56,7 @@ CLI entrypoints: `delx-agent-utilities`, `delx-utils` (alias), `delx-utils-mcp` 
 }
 ```
 
-45 tools become available immediately, plus three agent-readiness surfaces:
+89 tools become available immediately, plus three agent-readiness surfaces:
 
 - `delx_utilities_manifest`
 - `delx_utilities_connection_status`
@@ -84,9 +84,9 @@ schemas = list_util_tool_schemas()
 print(f"{len(schemas)} tools available")
 ```
 
-## The 45 tools
+## The 89 tools
 
-### Encoding & parsing (12)
+### Encoding & parsing (15)
 `util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_timezone_lookup`, `util_unit_convert`, `util_business_days`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
 
 ### Web extract (6)
@@ -107,6 +107,33 @@ print(f"{len(schemas)} tools available")
 ### Commerce workflows
 
 `util_loyalty_reward_quote`
+
+### Public data and identity (4)
+
+`util_vin_decode`, `util_wmi_decode`, `util_lei_lookup`, `util_inflation_calculator`
+
+### Local text, data, and identifiers (34)
+
+`util_holidays`, `util_slugify`, `util_mime_lookup`, `util_color_convert`,
+`util_ip_classify`, `util_cidr_contains`, `util_ulid_generate`,
+`util_html_strip`, `util_semver_compare`, `util_word_count`,
+`util_markdown_to_text`, `util_duration_parse`, `util_case_convert`,
+`util_query_string`, `util_url_join`, `util_percent_change`, `util_clamp`,
+`util_luhn_check`, `util_isbn_check`, `util_diff_lines`, `util_levenshtein`,
+`util_normalize_whitespace`, `util_extract_urls`, `util_extract_emails`,
+`util_url_encode`, `util_hex_convert`, `util_number_base`, `util_dedupe_lines`,
+`util_sort_lines`, `util_random_int`, `util_rot13`, `util_text_truncate`,
+`util_reading_time`, `util_random_choice`
+
+### Sales-led local preflights (6)
+
+`util_seeded_random_sample`, `util_base_gas_budget_check`,
+`util_dns_record_diff`, `util_http_header_diff`,
+`util_x402_payment_preflight`, `util_image_result_contract_check`
+
+These six preflights were selected from aggregate external Commerce sales.
+They are local implementations only: pricing, x402 delivery, telemetry, and
+refund ownership remain in Delx Commerce.
 
 Each tool's full input schema is available via `delx-utils show <tool>` or `UTIL_TOOL_SCHEMAS["<tool>"]` in Python.
 
@@ -136,6 +163,7 @@ src/delx_agent_utilities/
     ├── _tools_encoding.py
     ├── _tools_cron.py
     ├── _tools_http_codes.py
+    ├── _tools_sales_led.py
     ├── _tools_web.py    # roadmap: split into web/network/x402/composite in v0.2.0
     └── _tools_jwt_csv.py
 ```

@@ -1,6 +1,6 @@
 # Delx Agent Utilities
 
-Stateless utility tools for AI agents — 41 deterministic, session-free utilities for everyday agent operations.
+Stateless utility tools for AI agents — 89 deterministic, session-free utilities for everyday agent operations.
 
 Repository: https://github.com/davidmosiah/delx-agent-utilities
 Docs: https://ontology.delx.ai/utilities
@@ -17,12 +17,16 @@ Agent-readiness surfaces (call these first):
 - delx_utilities_privacy_audit
 
 Tools are grouped:
-- Encoding & parsing (12): util_json_validate, util_token_estimate, util_uuid_generate, util_timestamp_convert, util_base64, util_hash, util_regex_test, util_cron_describe, util_http_codes, util_jwt_inspect, util_csv_to_json, util_json_to_csv
+- Encoding & parsing (15): util_json_validate, util_token_estimate, util_uuid_generate, util_timestamp_convert, util_base64, util_hash, util_regex_test, util_cron_describe, util_http_codes, util_timezone_lookup, util_unit_convert, util_business_days, util_jwt_inspect, util_csv_to_json, util_json_to_csv
 - Web extract (6): util_page_extract, util_open_graph, util_links_extract, util_forms_extract, util_contact_extract, util_feed_discover
 - Network probes (8): util_url_health, util_robots_inspect, util_sitemap_probe, util_tls_inspect, util_security_txt_inspect, util_http_headers_inspect, util_dns_lookup, util_rdap_lookup
 - x402 / API intel (6): util_x402_server_probe, util_x402_resource_summary, util_x402_server_audit, util_api_health_report, util_openapi_summary, util_mcp_server_readiness_report
 - Identity / contact (1): util_email_validate
 - Composite reports (8): util_website_intelligence_report, util_domain_trust_report, util_docs_site_map, util_pricing_page_extract, util_company_contact_pack, util_api_integration_readiness, util_login_surface_report, util_content_distribution_report
+- Commerce workflow (1): util_loyalty_reward_quote
+- Public data and identity (4): util_vin_decode, util_wmi_decode, util_lei_lookup, util_inflation_calculator
+- Local text, data, and identifiers (34): util_holidays, util_slugify, util_mime_lookup, util_color_convert, util_ip_classify, util_cidr_contains, util_ulid_generate, util_html_strip, util_semver_compare, util_word_count, util_markdown_to_text, util_duration_parse, util_case_convert, util_query_string, util_url_join, util_percent_change, util_clamp, util_luhn_check, util_isbn_check, util_diff_lines, util_levenshtein, util_normalize_whitespace, util_extract_urls, util_extract_emails, util_url_encode, util_hex_convert, util_number_base, util_dedupe_lines, util_sort_lines, util_random_int, util_rot13, util_text_truncate, util_reading_time, util_random_choice
+- Sales-led local preflights (6): util_seeded_random_sample, util_base_gas_budget_check, util_dns_record_diff, util_http_header_diff, util_x402_payment_preflight, util_image_result_contract_check
 
 Safety:
 - No API keys required; networked tools call only public endpoints (rdap.org, dns.google) plus user-supplied URLs.

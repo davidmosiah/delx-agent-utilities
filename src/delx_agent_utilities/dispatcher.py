@@ -84,6 +84,7 @@ from ._internal._tools_public_data import (
     _vin_decode,
     _wmi_decode,
 )
+from ._internal._tools_sales_led import SALES_LED_HANDLERS
 from ._internal._tools_web import (
     _api_health_report,
     _api_integration_readiness,
@@ -200,6 +201,7 @@ _HANDLERS: dict[str, Any] = {
     "util_content_distribution_report": _content_distribution_report,
     "util_loyalty_reward_quote": _loyalty_reward_quote,
 }
+_HANDLERS.update(SALES_LED_HANDLERS)
 
 
 def _normalize_util_args(tool_name: str, arguments: dict) -> dict:
