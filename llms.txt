@@ -1,6 +1,6 @@
 # Delx Agent Utilities
 
-Stateless utility tools for AI agents — 89 deterministic, session-free utilities for everyday agent operations.
+Stateless utility tools for AI agents — 90 deterministic, session-free utilities for everyday agent operations.
 
 Repository: https://github.com/davidmosiah/delx-agent-utilities
 Docs: https://ontology.delx.ai/utilities
@@ -25,7 +25,7 @@ Tools are grouped:
 - Composite reports (8): util_website_intelligence_report, util_domain_trust_report, util_docs_site_map, util_pricing_page_extract, util_company_contact_pack, util_api_integration_readiness, util_login_surface_report, util_content_distribution_report
 - Commerce workflow (1): util_loyalty_reward_quote
 - Public data and identity (4): util_vin_decode, util_wmi_decode, util_lei_lookup, util_inflation_calculator
-- Local text, data, and identifiers (34): util_holidays, util_slugify, util_mime_lookup, util_color_convert, util_ip_classify, util_cidr_contains, util_ulid_generate, util_html_strip, util_semver_compare, util_word_count, util_markdown_to_text, util_duration_parse, util_case_convert, util_query_string, util_url_join, util_percent_change, util_clamp, util_luhn_check, util_isbn_check, util_diff_lines, util_levenshtein, util_normalize_whitespace, util_extract_urls, util_extract_emails, util_url_encode, util_hex_convert, util_number_base, util_dedupe_lines, util_sort_lines, util_random_int, util_rot13, util_text_truncate, util_reading_time, util_random_choice
+- Local text, data, and identifiers (35): util_holidays, util_slugify, util_mime_lookup, util_color_convert, util_ip_classify, util_cidr_contains, util_ulid_generate, util_html_strip, util_semver_compare, util_word_count, util_markdown_to_text, util_duration_parse, util_case_convert, util_query_string, util_url_join, util_percent_change, util_clamp, util_luhn_check, util_isbn_check, util_diff_lines, util_levenshtein, util_similarity, util_normalize_whitespace, util_extract_urls, util_extract_emails, util_url_encode, util_hex_convert, util_number_base, util_dedupe_lines, util_sort_lines, util_random_int, util_rot13, util_text_truncate, util_reading_time, util_random_choice
 - Sales-led local preflights (6): util_seeded_random_sample, util_base_gas_budget_check, util_dns_record_diff, util_http_header_diff, util_x402_payment_preflight, util_image_result_contract_check
 
 Safety:

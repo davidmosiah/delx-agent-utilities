@@ -9,6 +9,52 @@ from __future__ import annotations
 
 from typing import Any
 
+_MERGE_KEYS = (
+    "type",
+    "enum",
+    "minimum",
+    "maximum",
+    "exclusiveMinimum",
+    "exclusiveMaximum",
+    "minLength",
+    "maxLength",
+    "minItems",
+    "maxItems",
+    "items",
+    "properties",
+)
+
+
+def merge_input_schema(
+    bazaar: dict[str, Any] | None,
+    util: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Prefer bazaar properties, fill missing constraint keys from the util schema."""
+    bazaar_schema = bazaar if isinstance(bazaar, dict) else {}
+    util_schema = util if isinstance(util, dict) else {}
+    bazaar_props = bazaar_schema.get("properties")
+    util_props = util_schema.get("properties")
+    if not isinstance(bazaar_props, dict) or not bazaar_props:
+        return util_schema or bazaar_schema
+    merged = dict(bazaar_schema)
+    merged_props: dict[str, Any] = {
+        key: dict(spec) if isinstance(spec, dict) else spec
+        for key, spec in bazaar_props.items()
+    }
+    if isinstance(util_props, dict):
+        for field, spec in util_props.items():
+            if not isinstance(spec, dict):
+                continue
+            current = merged_props.get(field)
+            if not isinstance(current, dict):
+                merged_props[field] = dict(spec)
+                continue
+            for key in _MERGE_KEYS:
+                if key not in current and key in spec:
+                    current[key] = spec[key]
+    merged["properties"] = merged_props
+    return merged
+
 
 def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)

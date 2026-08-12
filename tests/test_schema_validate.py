@@ -44,3 +44,13 @@ def test_missing_required_is_not_this_gate():
 
 def test_uuid_count_schema_is_integer():
     assert _schema("util_uuid_generate")["properties"]["count"]["type"] == "integer"
+
+
+def test_levenshtein_rejects_overlong_text():
+    error = constraint_error_from_schema(
+        {"a": "x" * 2001, "b": "y"},
+        _schema("util_levenshtein"),
+    )
+    assert error["error"] == "invalid_input"
+    assert error["field"] == "a"
+    assert error["charged"] is False

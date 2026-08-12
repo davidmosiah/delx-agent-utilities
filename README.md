@@ -56,7 +56,7 @@ CLI entrypoints: `delx-agent-utilities`, `delx-utils` (alias), `delx-utils-mcp` 
 }
 ```
 
-89 tools become available immediately, plus three agent-readiness surfaces:
+90 tools become available immediately, plus three agent-readiness surfaces:
 
 - `delx_utilities_manifest`
 - `delx_utilities_connection_status`
@@ -84,7 +84,7 @@ schemas = list_util_tool_schemas()
 print(f"{len(schemas)} tools available")
 ```
 
-## The 89 tools
+## The 90 tools
 
 ### Encoding & parsing (15)
 `util_json_validate`, `util_token_estimate`, `util_uuid_generate`, `util_timestamp_convert`, `util_base64`, `util_hash`, `util_regex_test`, `util_cron_describe`, `util_http_codes`, `util_timezone_lookup`, `util_unit_convert`, `util_business_days`, `util_jwt_inspect`, `util_csv_to_json`, `util_json_to_csv`
@@ -112,7 +112,7 @@ print(f"{len(schemas)} tools available")
 
 `util_vin_decode`, `util_wmi_decode`, `util_lei_lookup`, `util_inflation_calculator`
 
-### Local text, data, and identifiers (34)
+### Local text, data, and identifiers (35)
 
 `util_holidays`, `util_slugify`, `util_mime_lookup`, `util_color_convert`,
 `util_ip_classify`, `util_cidr_contains`, `util_ulid_generate`,
@@ -120,6 +120,7 @@ print(f"{len(schemas)} tools available")
 `util_markdown_to_text`, `util_duration_parse`, `util_case_convert`,
 `util_query_string`, `util_url_join`, `util_percent_change`, `util_clamp`,
 `util_luhn_check`, `util_isbn_check`, `util_diff_lines`, `util_levenshtein`,
+`util_similarity`,
 `util_normalize_whitespace`, `util_extract_urls`, `util_extract_emails`,
 `util_url_encode`, `util_hex_convert`, `util_number_base`, `util_dedupe_lines`,
 `util_sort_lines`, `util_random_int`, `util_rot13`, `util_text_truncate`,

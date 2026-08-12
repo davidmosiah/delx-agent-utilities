@@ -1078,3 +1078,93 @@ UTIL_TOOL_SCHEMAS.update(
         },
     }
 )
+
+
+def _fill_missing_input_properties() -> None:
+    """Restore required fields that were published with empty properties."""
+    integer_fields = {
+        "bytes",
+        "code",
+        "count",
+        "from_base",
+        "from_year",
+        "limit",
+        "max",
+        "max_length",
+        "min",
+        "n",
+        "size",
+        "timeout",
+        "to_base",
+        "to_year",
+        "width",
+        "year",
+    }
+    array_fields = {"choices", "items", "options", "values"}
+    number_fields = {"amount", "purchase_amount"}
+    overlays = {
+        "util_levenshtein": {
+            "a": {"type": "string", "maxLength": 2000},
+            "b": {"type": "string", "maxLength": 2000},
+        },
+        "util_similarity": {
+            "a": {"type": "string", "maxLength": 2000},
+            "b": {"type": "string", "maxLength": 2000},
+        },
+        "util_random_int": {
+            "min": {"type": "integer"},
+            "max": {"type": "integer"},
+            "count": {"type": "integer", "minimum": 1, "maximum": 100},
+        },
+        "util_number_base": {
+            "value": {"type": "string"},
+            "from_base": {"type": "integer", "minimum": 2, "maximum": 36},
+            "to_base": {"type": "integer", "minimum": 2, "maximum": 36},
+        },
+        "util_text_truncate": {
+            "text": {"type": "string", "maxLength": 200000},
+            "max_length": {"type": "integer", "minimum": 1, "maximum": 200000},
+        },
+        "util_random_choice": {
+            "items": {"type": "array", "maxItems": 500},
+            "count": {"type": "integer", "minimum": 1, "maximum": 100},
+        },
+        "util_rot13": {"text": {"type": "string", "maxLength": 100000}},
+    }
+    if "util_similarity" not in UTIL_TOOL_SCHEMAS:
+        UTIL_TOOL_SCHEMAS["util_similarity"] = {
+            "name": "util_similarity",
+            "description": "Normalized Levenshtein similarity between two strings.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "required": ["a", "b"],
+            },
+        }
+        UTIL_REQUIRED_PARAMS["util_similarity"] = ["a", "b"]
+        if "util_similarity" not in UTIL_TOOL_NAMES:
+            UTIL_TOOL_NAMES.append("util_similarity")
+
+    for name, spec in UTIL_TOOL_SCHEMAS.items():
+        schema = spec.setdefault("inputSchema", {"type": "object"})
+        props = schema.setdefault("properties", {})
+        overlay = overlays.get(name, {})
+        for field in list(UTIL_REQUIRED_PARAMS.get(name, [])) + list(overlay):
+            if field in overlay:
+                current = props.get(field) if isinstance(props.get(field), dict) else {}
+                props[field] = {**current, **overlay[field]}
+                continue
+            existing = props.get(field)
+            if isinstance(existing, dict):
+                continue
+            if field in integer_fields:
+                props[field] = {"type": "integer"}
+            elif field in array_fields:
+                props[field] = {"type": "array"}
+            elif field in number_fields:
+                props[field] = {"type": "number"}
+            else:
+                props[field] = {"type": "string"}
+
+
+_fill_missing_input_properties()
