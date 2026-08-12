@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 from ._internal._helpers import _normalize_url
 from ._internal._mcp_readiness import build_mcp_server_readiness_report
+from ._internal._schema_validate import constraint_error_from_schema
 from ._internal._schemas import (
     UTIL_REQUIRED_PARAMS,
     UTIL_TOOL_NAMES,
@@ -330,6 +331,12 @@ async def call_util_tool(tool_name: str, arguments: dict) -> dict:
     missing = [p for p in required if p not in arguments or arguments[p] is None]
     if missing:
         return {"error": f"Missing required params: {missing}", "tool": tool_name, "required": required}
+
+    schema = (UTIL_TOOL_SCHEMAS.get(tool_name) or {}).get("inputSchema")
+    constraint_error = constraint_error_from_schema(arguments, schema)
+    if constraint_error:
+        constraint_error["tool"] = tool_name
+        return constraint_error
 
     try:
         if inspect.iscoroutinefunction(handler):

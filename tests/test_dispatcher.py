@@ -71,12 +71,20 @@ async def test_uuid_generate_is_local_and_fast():
 @pytest.mark.asyncio
 async def test_uuid_generate_rejects_out_of_range_count():
     result = await call_util_tool("util_uuid_generate", {"count": 999})
-    assert result == {
-        "error": "count must be between 1 and 10",
-        "field": "count",
-        "minimum": 1,
-        "maximum": 10,
-    }
+    assert result["error"] == "invalid_input"
+    assert result["field"] == "count"
+    assert result["minimum"] == 1
+    assert result["maximum"] == 10
+    assert result["charged"] is False
+
+
+@pytest.mark.asyncio
+async def test_hash_rejects_undocumented_algorithm():
+    result = await call_util_tool("util_hash", {"input": "x", "algorithm": "blake3"})
+    assert result["error"] == "invalid_input"
+    assert result["field"] == "algorithm"
+    assert result["charged"] is False
+    assert "sha256" in result["enum"]
 
 
 @pytest.mark.asyncio
