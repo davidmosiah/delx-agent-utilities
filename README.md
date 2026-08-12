@@ -34,6 +34,10 @@
 
 This package was extracted from the Delx Protocol MCP server so any AI builder can use the toolkit directly, without depending on the Delx runtime. The public product and protocol context lives at [ontology.delx.ai/utilities](https://ontology.delx.ai/utilities).
 
+## HTTP (v2 stateless)
+
+Not shipped. The Python FastMCP extra is **stdio-only**. Adding Streamable HTTP would need extra Starlette `/health` wiring beyond a one-flag opt-in, so it stays documented-skip (same for `google-ads-intent-mcp`). The tools themselves are already request-stateless.
+
 ## Install
 
 ```bash
