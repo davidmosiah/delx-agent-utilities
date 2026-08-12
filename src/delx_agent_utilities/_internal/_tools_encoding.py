@@ -87,16 +87,18 @@ def _uuid_generate(args: dict) -> dict:
         count = _parse_int(args.get("count", 1), default=1)
     except ValueError as e:
         return {"error": str(e), "field": "count", "expected": "integer (1-10)"}
-    clamped = min(10, max(1, count))
-    out = {
-        "uuids": [],
-        "count": clamped,
+    if not 1 <= count <= 10:
+        return {
+            "error": "count must be between 1 and 10",
+            "field": "count",
+            "minimum": 1,
+            "maximum": 10,
+        }
+    return {
+        "uuids": [str(uuid.uuid4()) for _ in range(count)],
+        "count": count,
         "version": 4,
     }
-    if clamped != count:
-        out["warning"] = f"count was clamped from {count} to {clamped}"
-    out["uuids"] = [str(uuid.uuid4()) for _ in range(clamped)]
-    return out
 
 
 def _timestamp_convert(args: dict) -> dict:

@@ -69,6 +69,17 @@ async def test_uuid_generate_is_local_and_fast():
 
 
 @pytest.mark.asyncio
+async def test_uuid_generate_rejects_out_of_range_count():
+    result = await call_util_tool("util_uuid_generate", {"count": 999})
+    assert result == {
+        "error": "count must be between 1 and 10",
+        "field": "count",
+        "minimum": 1,
+        "maximum": 10,
+    }
+
+
+@pytest.mark.asyncio
 async def test_base64_encode_roundtrip():
     encoded = await call_util_tool("util_base64", {"input": "hello", "action": "encode"})
     assert encoded["result"] == "aGVsbG8="

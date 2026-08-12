@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject out-of-range UUID batch sizes instead of silently clamping them.
 - Add six local-first preflights derived from aggregate external Commerce sales:
   reproducible sampling, Base gas budget, DNS/header diffs, x402 payment policy,
   and image delivery contract validation.
