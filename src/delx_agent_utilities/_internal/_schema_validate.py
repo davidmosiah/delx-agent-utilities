@@ -212,10 +212,12 @@ def _constraint_error_for_value(
             }
         if max_items is not None and len(value) > max_items:
             return {
-                "error": "invalid_input",
+                "error": "input_limit_exceeded",
                 "field": field,
                 "expected": f"array of at most {max_items} items",
                 "maxItems": max_items,
+                "limit": max_items,
+                "received": len(value),
                 "charged": False,
             }
 

@@ -54,3 +54,15 @@ def test_levenshtein_rejects_overlong_text():
     assert error["error"] == "invalid_input"
     assert error["field"] == "a"
     assert error["charged"] is False
+
+
+def test_dns_record_diff_oversized_array_is_input_limit_exceeded():
+    error = constraint_error_from_schema(
+        {"before": list(range(501)), "after": []},
+        _schema("util_dns_record_diff"),
+    )
+    assert error is not None
+    assert error["error"] == "input_limit_exceeded"
+    assert error["field"] == "before"
+    assert error["maxItems"] == 500
+    assert error["charged"] is False

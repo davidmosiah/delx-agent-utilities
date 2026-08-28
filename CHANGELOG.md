@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.1.9 - 2026-08-28
+
+- Array `maxItems` overflows return `input_limit_exceeded` (not generic `invalid_input`) so oversized DNS diffs fail closed before parsing.
 - Reject out-of-range UUID batch sizes instead of silently clamping them.
 - Add six local-first preflights derived from aggregate external Commerce sales:
   reproducible sampling, Base gas budget, DNS/header diffs, x402 payment policy,
