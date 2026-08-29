@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.10 - 2026-08-29
+
+Skill layer ships in-package (`skill/SKILL.md`). CLI `call` already existed; this release documents the MCP-or-skill surface.
+
 ## 0.1.9 - 2026-08-28
 
 - Array `maxItems` overflows return `input_limit_exceeded` (not generic `invalid_input`) so oversized DNS diffs fail closed before parsing.
