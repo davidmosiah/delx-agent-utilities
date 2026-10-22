@@ -65,6 +65,10 @@ def health(url):
 @pytest.mark.parametrize("destination", [
     "http://127.0.0.1/private", "http://169.254.169.254/latest/meta-data/",
     "http://[::1]/private", "http://localhost/private", "http://printer.local/private",
+    "http://2130706433/private", "http://127.1/private",
+    "http://0x7f000001/private", "http://0177.0.0.1/private",
+    "http://127.0.0.1./private",
+    "http://%31%32%37.0.0.1/private", "http://%6cocalhost/private",
     "file:///etc/passwd",
 ])
 @pytest.mark.parametrize("transport", ["httpx", "urllib"])
@@ -81,6 +85,16 @@ def test_private_redirect_is_rejected_before_transport(synthetic_http, destinati
     assert calls[transport] == [start]
     if transport == "httpx":
         assert calls["urllib"] == [], "security rejection must not enter fallback"
+
+
+def test_unicode_numeric_initial_target_is_rejected_without_transport(synthetic_http):
+    _, calls, _ = synthetic_http
+
+    result = health("http://１２７.０.０.１/private")
+
+    assert result["reachable"] is False
+    assert result["code"] == "blocked_target"
+    assert calls == {"httpx": [], "urllib": []}
 
 
 @pytest.mark.parametrize("transport", ["httpx", "urllib"])

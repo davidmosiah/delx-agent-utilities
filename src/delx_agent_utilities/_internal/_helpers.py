@@ -64,12 +64,25 @@ def _blocked_url_reason(value: str) -> str:
     host = str(parsed.hostname or "").strip().lower()
     if not host:
         return "blocked: URL host is required"
+    if "%" in host:
+        # urllib decodes escapes in the authority while other clients do not.
+        # Reject ambiguous hosts rather than applying different URL policies.
+        return "blocked: percent-encoded URL hosts are not allowed"
+    try:
+        host = host.encode("idna").decode("ascii").rstrip(".")
+    except UnicodeError:
+        return "blocked: invalid URL host"
     if host in {"localhost", "0.0.0.0"} or host.endswith(".local"):
         return "blocked: local network targets are not allowed"
     try:
         ip = ipaddress.ip_address(host)
     except ValueError:
-        return ""
+        # inet_aton parses legacy IPv4 spellings (integer, octal, hex and
+        # shortened forms) locally; unlike getaddrinfo it never resolves DNS.
+        try:
+            ip = ipaddress.IPv4Address(socket.inet_aton(host))
+        except OSError:
+            return ""
     if not ip.is_global:
         return "blocked: private, loopback, or link-local targets are not allowed"
     return ""
@@ -307,11 +320,18 @@ async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "G
     if blocked:
         return None, blocked
     httpx_error: Exception | None = None
+
+    async def validate_response_destination(response: httpx.Response) -> None:
+        # Validate before httpx prepares next_request, which parses Location
+        # even when follow_redirects=False (and can otherwise fail first).
+        _redirect_destination(str(response.request.url), response.status_code, response.headers, 0)
+
     try:
         async with httpx.AsyncClient(
             follow_redirects=False,
             timeout=max(1, min(timeout_s, 15)),
             headers={"user-agent": "DelxAgentToolkit/3.3"},
+            event_hooks={"response": [validate_response_destination]},
         ) as client:
             request_method = client.get if method.upper() == "GET" else client.head
             for hops in range(6):
@@ -322,6 +342,10 @@ async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "G
                 target = destination
     except _HttpPolicyError as e:
         return None, str(e)
+    except httpx.InvalidURL:
+        # httpx can reject a Location while constructing its next_request,
+        # even with auto-follow disabled. Do not retry that URL via urllib.
+        return None, "blocked: invalid HTTP URL"
     except Exception as e:
         httpx_error = e
 
