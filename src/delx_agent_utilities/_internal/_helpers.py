@@ -229,14 +229,36 @@ def _decode_response_bytes(raw: bytes, headers: Any) -> str:
         return raw.decode("utf-8", errors="replace")
 
 
-def _urllib_request_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> _CompatResponse:
+class _HttpPolicyError(ValueError):
+    """A rejected destination must never be retried through another client."""
+
+
+def _redirect_destination(url: str, status: int, headers: Any, hops: int) -> str | None:
+    if status not in {301, 302, 303, 307, 308} or not headers.get("location"):
+        return None
+    target = urljoin(url, str(headers["location"]))
+    blocked = _blocked_url_reason(target)
+    if blocked:
+        raise _HttpPolicyError(blocked)
+    if hops >= 5:
+        raise _HttpPolicyError("blocked: too many HTTP redirects (maximum 5)")
+    return target
+
+
+class _NoAutomaticRedirect(urllib_request.HTTPRedirectHandler):
+    def redirect_request(self, request, response, code, message, headers, newurl):
+        return None
+
+
+def _urllib_single_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> _CompatResponse:
     request = urllib_request.Request(
         url,
         headers={"user-agent": "DelxAgentToolkit/3.3"},
         method=method.upper(),
     )
     try:
-        with urllib_request.urlopen(request, timeout=max(1, min(timeout_s, 15))) as response:
+        opener = urllib_request.build_opener(_NoAutomaticRedirect())
+        with opener.open(request, timeout=max(1, min(timeout_s, 15))) as response:
             raw = b"" if method.upper() == "HEAD" else response.read()
             return _CompatResponse(
                 status_code=int(getattr(response, "status", 0) or 0),
@@ -263,6 +285,20 @@ def _urllib_request_response(url: str, *, timeout_s: int = 8, method: str = "GET
         raise RuntimeError(str(reason or e)) from e
 
 
+def _urllib_request_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> _CompatResponse:
+    target = url
+    for hops in range(6):
+        blocked = _blocked_url_reason(target)
+        if blocked:
+            raise _HttpPolicyError(blocked)
+        response = _urllib_single_response(target, timeout_s=timeout_s, method=method)
+        destination = _redirect_destination(target, response.status_code, response.headers, hops)
+        if destination is None:
+            return response
+        target = destination
+    raise _HttpPolicyError("blocked: too many HTTP redirects")
+
+
 async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> tuple[Any | None, str | None]:
     target = _normalize_url(url)
     if not target:
@@ -273,18 +309,24 @@ async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "G
     httpx_error: Exception | None = None
     try:
         async with httpx.AsyncClient(
-            follow_redirects=True,
+            follow_redirects=False,
             timeout=max(1, min(timeout_s, 15)),
             headers={"user-agent": "DelxAgentToolkit/3.3"},
         ) as client:
             request_method = client.get if method.upper() == "GET" else client.head
-            response = await request_method(target)
-            return response, None
+            for hops in range(6):
+                response = await request_method(target)
+                destination = _redirect_destination(target, response.status_code, response.headers, hops)
+                if destination is None:
+                    return response, None
+                target = destination
+    except _HttpPolicyError as e:
+        return None, str(e)
     except Exception as e:
         httpx_error = e
 
     try:
-        response = await asyncio.to_thread(_urllib_request_response, target, timeout_s=timeout_s, method=method)
+        response = await asyncio.to_thread(_urllib_request_response, _normalize_url(url), timeout_s=timeout_s, method=method)
         return response, None
     except TimeoutError:
         return None, f"timeout after {timeout_s}s"
