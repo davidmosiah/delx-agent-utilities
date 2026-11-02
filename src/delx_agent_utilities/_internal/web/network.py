@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 import httpx
 
 from .._helpers import (
+    _blocked_url_reason,
     _fetch_http_response,
     _fetch_json_response,
     _fetch_text_response,
@@ -106,11 +107,20 @@ async def _tls_inspect(args: dict) -> dict:
         timeout_s = _parse_int(args.get("timeout", 8), default=8)
     except ValueError as e:
         return {"error": str(e), "field": "timeout", "expected": "integer (1-15)"}
-    parsed = urlparse(_normalize_url(url))
-    host = parsed.hostname or str(url or "").strip()
-    port = int(parsed.port or 443)
-    if not host:
-        return {"error": "url is required", "field": "url"}
+    normalized = _normalize_url(url)
+    try:
+        if not normalized:
+            raise ValueError("url is required")
+        blocked = _blocked_url_reason(normalized)
+        if blocked:
+            raise ValueError(blocked)
+        parsed = urlparse(normalized)
+        host = parsed.hostname or ""
+        port = parsed.port if parsed.port is not None else 443
+        if not 1 <= port <= 65535:
+            raise ValueError("blocked: invalid network port")
+    except ValueError as e:
+        return {"url": normalized, "reachable": False, "error": str(e), "field": "url"}
     try:
         payload = await asyncio.to_thread(_tls_probe_sync, host, port, timeout_s)
         payload["reachable"] = True
@@ -396,3 +406,4 @@ async def _email_validate(args: dict) -> dict:
         "a_records": a_records,
         "likely_deliverable": bool(mx_records or a_records),
     }
+
