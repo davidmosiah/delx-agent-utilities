@@ -27,7 +27,7 @@ from .schemas import (
 )
 from .url_clean import url_canonicalize
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 
 __all__ = [
     "SUPPORTED_CLIENTS",

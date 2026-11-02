@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - Candidate
+
+- Pin validated public DNS destinations for HTTP hops and TLS probes, validate redirects, and require TLS 1.2 or newer.
+- Restore patched MCP 1.x compatibility and align the runtime version.
+- Breaking: relevant configured proxies now cause pinned HTTP requests to fail closed; see the migration guide.
+- Pin MCP readiness HTTP POST and GET destinations, reject redirects and credentials, and cap each response at 200,000 bytes.
+
 ## Unreleased
 
 ## 0.1.10 - 2026-08-29

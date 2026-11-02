@@ -59,6 +59,10 @@ def build_agent_manifest(client: str = "generic") -> dict:
         "external_endpoints": {
             "rdap_org": "https://rdap.org/domain/<domain>",
             "google_dns": "https://dns.google/resolve",
+            "nhtsa": "https://vpic.nhtsa.dot.gov/api/vehicles",
+            "gleif": "https://api.gleif.org/api/v1/lei-records",
+            "bls": "https://api.bls.gov/publicAPI/v2/timeseries/data",
+            "user_supplied_urls": "caller-supplied public URLs and redirects",
         },
         "license": "MIT",
         "homepage": "https://github.com/davidmosiah/delx-agent-utilities",
@@ -87,9 +91,8 @@ def build_privacy_audit() -> dict:
     return {
         "summary": (
             "Stateless local utilities. Does not require, store, or transmit "
-            "API keys or user secrets. Network calls are limited to public, "
-            "unauthenticated endpoints (rdap.org for RDAP, dns.google for "
-            "DNS-over-HTTPS) plus user-supplied URLs."
+            "API keys. Network tools can transmit caller inputs to fixed public providers "
+            "or user-supplied URLs and redirects. Do not submit secrets or private data."
         ),
         "stores_state": False,
         "stores_credentials": False,
@@ -97,9 +100,12 @@ def build_privacy_audit() -> dict:
         "third_party_endpoints": [
             {"name": "rdap.org", "purpose": "RDAP domain lookup", "auth": "none"},
             {"name": "dns.google", "purpose": "DNS-over-HTTPS", "auth": "none"},
+            {"name": "vpic.nhtsa.dot.gov", "purpose": "VIN/WMI lookup", "auth": "none"},
+            {"name": "api.gleif.org", "purpose": "LEI lookup", "auth": "none"},
+            {"name": "api.bls.gov", "purpose": "CPI data", "auth": "none"},
             {
                 "name": "user-supplied URL",
-                "purpose": "Per-tool target (page extract, x402 probe, etc.)",
+                "purpose": "Per-tool target and redirects (page extract, x402 probe, etc.)",
                 "auth": "none",
             },
         ],

@@ -27,9 +27,9 @@
 89 stateless utility tools that AI agents reach for constantly: URL health checks, page extraction, MCP readiness, x402 server discovery, loyalty reward quotes, JWT inspection, DNS / RDAP lookups, JSON / CSV conversion, hash / base64, cron description, and more.
 
 - **Stateless** — every call is independent; no session, no cache, no DB.
-- **No API keys** — public endpoints only (rdap.org, dns.google, plus user-supplied URLs).
+- **No API keys** — fixed public providers and user-supplied public URLs; see Privacy posture for destinations.
 - **Deterministic** — no LLMs, no model calls, no fuzzy outputs.
-- **Fast** — most tools < 100ms; networked tools < 5s with timeouts.
+- **Bounded operations** — network tools use per-call timeouts, subject to resolver and parser limits described below.
 - **MCP-native** — agent-readiness manifest, connection status, privacy audit.
 
 This package was extracted from the Delx Protocol MCP server so any AI builder can use the toolkit directly, without depending on the Delx runtime. The public product and protocol context lives at [ontology.delx.ai/utilities](https://ontology.delx.ai/utilities).
@@ -144,11 +144,13 @@ Each tool's full input schema is available via `delx-utils show <tool>` or `UTIL
 
 ## Privacy posture
 
-**No API keys. No telemetry. No state.** Networked tools call only:
+**No API keys. No telemetry. No stored state.** Networked tools may contact:
 
-- `rdap.org/domain/<domain>` for RDAP lookups
-- `dns.google/resolve` for DNS-over-HTTPS
-- User-supplied URLs for everything else
+- `rdap.org/domain/<domain>` for RDAP and `dns.google/resolve` for DNS-over-HTTPS.
+- `vpic.nhtsa.dot.gov` for VIN/WMI, `api.gleif.org` for LEI, and `api.bls.gov` for CPI data.
+- Public URLs supplied by the caller and their redirects; provider redirects can also change destinations. Do not submit secrets or private data in URLs or inputs.
+
+The pinned HTTP inspection transport uses HTTP/1.1 with validated public DNS destinations and redirects. It fails closed when the relevant `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` variable is nonempty, including lowercase variants; `NO_PROXY` does not override this. It keeps no cookie jar, requests identity encoding (compressed responses are rejected), and limits bodies to 8 MiB per hop. `util_mcp_server_readiness_report` pins each public destination, rejects redirects and URL credentials, and caps each response at 200,000 bytes; injected HTTP clients are not accepted. Fixed-provider HTTP clients have their own behavior and are not covered by the pinned transport's guarantees. OS DNS and some HTTP parser reads are not subject to a strict wall-clock deadline. See [NETWORK_SECURITY.md](NETWORK_SECURITY.md) and [MIGRATION.md](MIGRATION.md).
 
 Call `delx_utilities_privacy_audit` (or `delx-utils privacy-audit`) to see the full posture in JSON form before invoking any networked tool.
 
@@ -177,7 +179,7 @@ src/delx_agent_utilities/
 
 - **v0.2.0** — split `_internal/_tools_web.py` (1k LOC) into per-domain modules: `_tools_web_extract.py`, `_tools_network.py`, `_tools_x402.py`, `_tools_composite.py`.
 - Per-tool unit tests (one file per tool) replacing the smoke-only suite.
-- Optional `httpx.AsyncClient` reuse for batched probes.
+- Further provider and transport integration tests in controlled environments.
 - Configurable per-tool timeouts via env (`DELX_UTILITIES_DEFAULT_TIMEOUT_S`, `DELX_UTILITIES_URL_HEALTH_TIMEOUT_S`, …).
 
 ## Provenance
