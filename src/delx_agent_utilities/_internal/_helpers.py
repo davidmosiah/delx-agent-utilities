@@ -20,17 +20,18 @@ import io
 import json
 import re
 import socket
+import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from html import unescape
 from html.parser import HTMLParser
 from typing import Any
-from urllib import error as urllib_error
-from urllib import request as urllib_request
 from urllib.parse import urljoin, urlparse
 
-import httpx
+
+from ._public_socket import _connect_public
+from ._public_http import _request_public_http
 
 
 def _parse_int(value: Any, *, default: int | None = None) -> int:
@@ -249,7 +250,10 @@ class _HttpPolicyError(ValueError):
 def _redirect_destination(url: str, status: int, headers: Any, hops: int) -> str | None:
     if status not in {301, 302, 303, 307, 308} or not headers.get("location"):
         return None
-    target = urljoin(url, str(headers["location"]))
+    location = str(headers["location"])
+    if any(ord(c) < 32 or ord(c) == 127 for c in location):
+        raise _HttpPolicyError("blocked: control characters in HTTP redirect")
+    target = urljoin(url, location)
     blocked = _blocked_url_reason(target)
     if blocked:
         raise _HttpPolicyError(blocked)
@@ -258,53 +262,23 @@ def _redirect_destination(url: str, status: int, headers: Any, hops: int) -> str
     return target
 
 
-class _NoAutomaticRedirect(urllib_request.HTTPRedirectHandler):
-    def redirect_request(self, request, response, code, message, headers, newurl):
-        return None
-
-
-def _urllib_single_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> _CompatResponse:
-    request = urllib_request.Request(
-        url,
-        headers={"user-agent": "DelxAgentToolkit/3.3"},
-        method=method.upper(),
-    )
-    try:
-        opener = urllib_request.build_opener(_NoAutomaticRedirect())
-        with opener.open(request, timeout=max(1, min(timeout_s, 15))) as response:
-            raw = b"" if method.upper() == "HEAD" else response.read()
-            return _CompatResponse(
-                status_code=int(getattr(response, "status", 0) or 0),
-                text=_decode_response_bytes(raw, response.headers),
-                headers=response.headers,
-                url=str(response.geturl()),
-                reason_phrase=str(getattr(response, "reason", "") or ""),
-            )
-    except urllib_error.HTTPError as e:
-        raw = b"" if method.upper() == "HEAD" else e.read()
-        return _CompatResponse(
-            status_code=int(e.code or 0),
-            text=_decode_response_bytes(raw, e.headers),
-            headers=e.headers,
-            url=str(e.geturl()),
-            reason_phrase=str(e.reason or ""),
-        )
-    except socket.timeout as e:
-        raise TimeoutError() from e
-    except urllib_error.URLError as e:
-        reason = getattr(e, "reason", e)
-        if isinstance(reason, TimeoutError):
-            raise TimeoutError() from e
-        raise RuntimeError(str(reason or e)) from e
+def _urllib_single_response(url: str, *, timeout_s: float = 8, method: str = "GET") -> _CompatResponse:
+    # Historical private helper name retained; no urllib client/proxy/fallback.
+    status, raw, headers, reason = _request_public_http(url, timeout=timeout_s, method=method)
+    return _CompatResponse(status, _decode_response_bytes(raw, headers), headers, url, reason)
 
 
 def _urllib_request_response(url: str, *, timeout_s: int = 8, method: str = "GET") -> _CompatResponse:
     target = url
+    deadline = time.monotonic() + max(1, min(timeout_s, 15))
     for hops in range(6):
         blocked = _blocked_url_reason(target)
         if blocked:
             raise _HttpPolicyError(blocked)
-        response = _urllib_single_response(target, timeout_s=timeout_s, method=method)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("HTTP request timed out")
+        response = _urllib_single_response(target, timeout_s=remaining, method=method)
         destination = _redirect_destination(target, response.status_code, response.headers, hops)
         if destination is None:
             return response
@@ -319,49 +293,13 @@ async def _fetch_http_response(url: str, *, timeout_s: int = 8, method: str = "G
     blocked = _blocked_url_reason(target)
     if blocked:
         return None, blocked
-    httpx_error: Exception | None = None
-
-    async def validate_response_destination(response: httpx.Response) -> None:
-        # Validate before httpx prepares next_request, which parses Location
-        # even when follow_redirects=False (and can otherwise fail first).
-        _redirect_destination(str(response.request.url), response.status_code, response.headers, 0)
-
     try:
-        async with httpx.AsyncClient(
-            follow_redirects=False,
-            timeout=max(1, min(timeout_s, 15)),
-            headers={"user-agent": "DelxAgentToolkit/3.3"},
-            event_hooks={"response": [validate_response_destination]},
-        ) as client:
-            request_method = client.get if method.upper() == "GET" else client.head
-            for hops in range(6):
-                response = await request_method(target)
-                destination = _redirect_destination(target, response.status_code, response.headers, hops)
-                if destination is None:
-                    return response, None
-                target = destination
-    except _HttpPolicyError as e:
-        return None, str(e)
-    except httpx.InvalidURL:
-        # httpx can reject a Location while constructing its next_request,
-        # even with auto-follow disabled. Do not retry that URL via urllib.
-        return None, "blocked: invalid HTTP URL"
-    except Exception as e:
-        httpx_error = e
-
-    try:
-        response = await asyncio.to_thread(_urllib_request_response, _normalize_url(url), timeout_s=timeout_s, method=method)
+        response = await asyncio.to_thread(_urllib_request_response, target, timeout_s=timeout_s, method=method)
         return response, None
     except TimeoutError:
         return None, f"timeout after {timeout_s}s"
-    except Exception as fallback_error:
-        if isinstance(httpx_error, httpx.TimeoutException):
-            return None, f"timeout after {timeout_s}s"
-        primary = str(httpx_error).strip() if httpx_error else ""
-        fallback = str(fallback_error).strip()
-        if primary and fallback and fallback != primary:
-            return None, f"{primary} | urllib fallback: {fallback}"
-        return None, fallback or primary or "fetch failed"
+    except Exception as error:
+        return None, str(error).strip() or "fetch failed"
 
 
 async def _fetch_text_response(url: str, *, timeout_s: int = 8) -> tuple[Any | None, str | None]:
@@ -426,7 +364,7 @@ def _tls_probe_sync(host: str, port: int, timeout_s: int) -> dict[str, Any]:
 
     context = ssl.create_default_context()
     context.minimum_version = ssl.TLSVersion.TLSv1_2
-    with socket.create_connection((host, port), timeout=max(1, min(timeout_s, 15))) as sock:
+    with _connect_public(host, port, timeout=max(1, min(timeout_s, 15))) as sock:
         with context.wrap_socket(sock, server_hostname=host) as tls_sock:
             cert = tls_sock.getpeercert()
     if not cert:
@@ -461,3 +399,4 @@ def _tls_probe_sync(host: str, port: int, timeout_s: int) -> dict[str, Any]:
         "days_until_expiry": days_until_expiry,
         "san_dns": san_dns[:50],
     }
+
