@@ -117,12 +117,21 @@ class OfflineHTTPTests(unittest.TestCase):
         with patch.object(http.ssl,'create_default_context',return_value=context) as default:
             self.assertEqual(http._request_public_http('https://example.test/',timeout=1,method='GET')[0],200)
             default.assert_called_once_with()
+            self.assertEqual(context.minimum_version, http.ssl.TLSVersion.TLSv1_2)
         context.wrap_socket=lambda *args,**kw: (_ for _ in ()).throw(http.ssl.SSLCertVerificationError('fake mismatch'))
         with patch.object(http.ssl,'create_default_context',return_value=context):
             with self.assertRaises(http.ssl.SSLCertVerificationError):
                 http._request_public_http('https://example.test/',timeout=1,method='GET')
         self.assertEqual(factory.call_count,2)
         self.assertTrue(all(s.closed for s in sockets))
+
+    def test_real_context_retains_certificate_and_hostname_validation(self):
+        # Construct stdlib context locally; no handshake or network access.
+        context = http.ssl.create_default_context()
+        context.minimum_version = http.ssl.TLSVersion.TLSv1_2
+        self.assertEqual(context.minimum_version, http.ssl.TLSVersion.TLSv1_2)
+        self.assertEqual(context.verify_mode, http.ssl.CERT_REQUIRED)
+        self.assertTrue(context.check_hostname)
 
     def test_redirect_rebind_rejected_before_second_socket(self):
         calls=[]

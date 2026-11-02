@@ -22,7 +22,9 @@ class _PinnedHTTPSConnection(_PinnedHTTPConnection):
         raw = _connect_public(self.host, self.port, self.timeout)
         try:
             # Keep the original DNS identity for SNI AND certificate validation.
-            self.sock = ssl.create_default_context().wrap_socket(raw, server_hostname=self.host)
+            context = ssl.create_default_context()
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            self.sock = context.wrap_socket(raw, server_hostname=self.host)
         except BaseException:
             raw.close()
             raise
