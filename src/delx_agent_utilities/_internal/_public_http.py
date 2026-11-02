@@ -31,7 +31,7 @@ class _PinnedHTTPSConnection(_PinnedHTTPConnection):
 
 
 def _request_public_http(url: str, *, timeout: float, method: str,
-                         max_bytes: int = 8 * 1024 * 1024):
+                         max_bytes: int = 8 * 1024 * 1024, body: bytes | None = None):
     """Return (status, bytes, headers, reason) without following any redirect.
 
     Direct egress only: fails closed on configured relevant proxy variables.
@@ -61,8 +61,13 @@ def _request_public_http(url: str, *, timeout: float, method: str,
     if not host or not 1 <= port <= 65535:
         raise ValueError('blocked: invalid HTTP host or port')
     method = method.upper()
-    if method not in ('GET', 'HEAD'):
-        raise ValueError('only GET and HEAD are supported')
+    if method not in ('GET', 'HEAD', 'POST'):
+        raise ValueError('only GET, HEAD and POST are supported')
+    if method == 'POST':
+        if not isinstance(body, bytes) or len(body) > 4096:
+            raise ValueError('POST body must be bytes and at most 4096 bytes')
+    elif body is not None:
+        raise ValueError('body is only supported for POST')
     # Preserve existing percent escapes; encode Unicode without double-encoding.
     target = quote(parsed.path or '/', safe="/%:@!$&'()*+,;=-._~")
     if parsed.query:
@@ -83,12 +88,15 @@ def _request_public_http(url: str, *, timeout: float, method: str,
             if connection.sock is not None:
                 connection.sock.settimeout(value)
         remaining()
-        connection.request(method, target, headers={
+        headers = {
             'Host': authority,
             'User-Agent': 'DelxAgentToolkit/3.3',
             'Accept-Encoding': 'identity',
             'Connection': 'close',
-        })
+        }
+        if method == 'POST':
+            headers.update({'Content-Type': 'application/json', 'Accept': 'application/json'})
+        connection.request(method, target, body=body, headers=headers)
         remaining()
         response = connection.getresponse()
         try:

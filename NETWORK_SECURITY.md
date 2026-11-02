@@ -19,7 +19,7 @@ insecure client. Mixed public/private DNS responses are rejected as a whole.
   drop-in transport for proxy-required environments. A future explicit proxy
   mode needs a trusted-proxy destination-validation design; ordinary forwarding
   or CONNECT would undo numeric pinning. No environment setting is auto-mutated.
-- Only HTTP(S) GET and HEAD are supported. URL userinfo credentials are rejected.
+- URL inspection supports HTTP(S) GET and HEAD; MCP readiness also uses fixed JSON-RPC POSTs. URL userinfo credentials are rejected. MCP readiness refuses all redirects and caps every response at 200,000 bytes. It does not accept injected HTTP clients.
   Requests do not retain cookies between redirects or send authorization headers.
 - Responses negotiate `Accept-Encoding: identity`; a nonidentity response is
   rejected explicitly rather than automatically decompressed. Maximum body is

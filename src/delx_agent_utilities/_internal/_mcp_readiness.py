@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
+import time
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
-import httpx
+from ._public_http import _request_public_http
 
 _TOOL_NAME_RE = re.compile(r"^[A-Za-z0-9_.-]{1,80}$")
 _USER_AGENT = "DelxAgentUtilities/0.1 mcp-readiness"
@@ -15,23 +17,19 @@ _USER_AGENT = "DelxAgentUtilities/0.1 mcp-readiness"
 
 def _normalize_origin(value: str) -> str:
     raw = str(value or "").strip()
-    if not raw:
+    if not raw or any(ord(c) < 32 or ord(c) == 127 for c in raw):
         return ""
     if not raw.startswith(("http://", "https://")):
         raw = "https://" + raw
-    parsed = urlparse(raw)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+    try:
+        parsed = urlsplit(raw)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username is not None or parsed.password is not None:
+            return ""
+        if parsed.port is not None and not 1 <= parsed.port <= 65535:
+            return ""
+        return f"{parsed.scheme}://{parsed.netloc}"
+    except ValueError:
         return ""
-    return f"{parsed.scheme}://{parsed.netloc}"
-
-
-def _is_blocked_host(origin: str) -> str:
-    host = (urlparse(origin).hostname or "").strip().lower()
-    if host in {"localhost", "127.0.0.1", "::1", "0.0.0.0"}:
-        return "local hosts are blocked"
-    if host.endswith(".local"):
-        return "local network names are blocked"
-    return ""
 
 
 def _json_rpc_payload(method: str, request_id: int) -> dict[str, Any]:
@@ -45,38 +43,22 @@ def _json_rpc_payload(method: str, request_id: int) -> dict[str, Any]:
     return payload
 
 
-async def _post_mcp_jsonrpc(client: httpx.AsyncClient, url: str, method: str, *, timeout_s: int, request_id: int) -> dict[str, Any]:
+async def _probe(url: str, method: str, *, deadline: float, payload: dict | None = None) -> dict[str, Any]:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("readiness deadline exceeded")
+    body = json.dumps(payload, separators=(",", ":")).encode() if payload is not None else None
+    status, raw, _, _ = await asyncio.to_thread(
+        _request_public_http, url, timeout=remaining, method=method, max_bytes=200_000, body=body
+    )
+    if 300 <= status < 400:
+        raise ValueError("redirects are not supported")
     try:
-        response = await client.post(
-            url,
-            json=_json_rpc_payload(method, request_id),
-            headers={"accept": "application/json", "content-type": "application/json", "user-agent": _USER_AGENT},
-            timeout=timeout_s,
-        )
-        text = response.text[:200_000]
-        payload = response.json() if text else {}
-        return {
-            "ok": 200 <= response.status_code < 300 and isinstance(payload, dict) and "error" not in payload,
-            "status": int(response.status_code),
-            "payload": payload if isinstance(payload, dict) else {},
-            "error": "",
-        }
-    except Exception as exc:
-        return {"ok": False, "status": 0, "payload": {}, "error": f"{type(exc).__name__}: {exc}"[:240]}
-
-
-async def _get_json(client: httpx.AsyncClient, url: str, *, timeout_s: int) -> dict[str, Any]:
-    try:
-        response = await client.get(url, headers={"accept": "application/json", "user-agent": _USER_AGENT}, timeout=timeout_s)
-        payload = response.json() if response.text else {}
-        return {
-            "ok": 200 <= response.status_code < 300 and isinstance(payload, dict),
-            "status": int(response.status_code),
-            "payload": payload if isinstance(payload, dict) else {},
-            "error": "",
-        }
-    except Exception as exc:
-        return {"ok": False, "status": 0, "payload": {}, "error": f"{type(exc).__name__}: {exc}"[:240]}
+        parsed = json.loads(raw) if raw else {}
+    except (UnicodeDecodeError, ValueError):
+        return {"ok": False, "status": status, "payload": {}, "error": "invalid JSON response"}
+    return {"ok": 200 <= status < 300 and isinstance(parsed, dict) and "error" not in parsed,
+            "status": status, "payload": parsed if isinstance(parsed, dict) else {}, "error": ""}
 
 
 def _tools_from_payload(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -164,26 +146,27 @@ def _next_action(verdict: str, issues: list[dict[str, str]]) -> str:
     return "Add richer tool descriptions and argument descriptions, then rerun the readiness report."
 
 
-async def build_mcp_server_readiness_report(args: dict[str, Any], *, http_client: httpx.AsyncClient | None = None) -> dict[str, Any]:
-    timeout_s = max(1, min(15, int(args.get("timeout") or 8)))
+async def build_mcp_server_readiness_report(args: dict[str, Any], *, http_client: Any = None) -> dict[str, Any]:
+    tool_name = "util_mcp_server_readiness_report"
+    if http_client is not None:
+        return {"error": "unsupported_client", "tool_name": tool_name}
     origin = _normalize_origin(str(args.get("url") or ""))
     if not origin:
-        return {"error": "invalid url", "tool_name": "util_mcp_server_readiness_report", "required": ["url"]}
-    blocked = _is_blocked_host(origin)
-    if blocked:
-        return {"error": blocked, "tool_name": "util_mcp_server_readiness_report", "url": origin}
-
-    owns_client = http_client is None
-    client = http_client or httpx.AsyncClient(follow_redirects=True)
+        return {"error": "invalid or blocked URL", "tool_name": tool_name, "required": ["url"]}
     try:
-        mcp_url = origin.rstrip("/") + "/mcp"
-        manifest_url = origin.rstrip("/") + "/.well-known/mcp.json"
-        initialize = await _post_mcp_jsonrpc(client, mcp_url, "initialize", timeout_s=timeout_s, request_id=1)
-        tools_list = await _post_mcp_jsonrpc(client, mcp_url, "tools/list", timeout_s=timeout_s, request_id=2)
-        manifest = await _get_json(client, manifest_url, timeout_s=timeout_s)
-    finally:
-        if owns_client:
-            await client.aclose()
+        timeout_s = max(1, min(15, int(args.get("timeout") or 8)))
+        deadline = time.monotonic() + timeout_s
+        mcp_url = origin + "/mcp"
+        initialize = await _probe(mcp_url, "POST", deadline=deadline, payload=_json_rpc_payload("initialize", 1))
+        tools_list = await _probe(mcp_url, "POST", deadline=deadline, payload=_json_rpc_payload("tools/list", 2))
+        manifest = await _probe(origin + "/.well-known/mcp.json", "GET", deadline=deadline)
+    except TimeoutError:
+        return {"error": "timeout", "tool_name": tool_name}
+    except ValueError as exc:
+        reason = "redirects are not supported" if "redirects are not supported" in str(exc) else "response or network destination rejected"
+        return {"error": "probe_blocked", "reason": reason, "tool_name": tool_name}
+    except Exception:
+        return {"error": "probe_failed", "reason": "network or response failure", "tool_name": tool_name}
 
     tools = _tools_from_payload(tools_list.get("payload") or {})
     quality, issues = _schema_quality(tools)

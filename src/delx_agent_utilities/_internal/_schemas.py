@@ -1025,7 +1025,7 @@ UTIL_TOOL_SCHEMAS.update(
         },
         "util_mcp_server_readiness_report": {
             "name": "util_mcp_server_readiness_report",
-            "description": "Score an MCP server for initialize, tools/list, schema hygiene, manifest discovery, and agent usability.",
+            "description": "Inspect MCP readiness via pinned public HTTP; redirects are rejected.",
             "inputSchema": {"type": "object", "properties": {"url": {"type": "string", "description": "HTTP origin or MCP server URL to inspect"}, "timeout": {"type": "integer", "description": "Timeout in seconds (1-15)", "default": 8, "minimum": 1, "maximum": 15}}, "required": ["url"]},
         },
         "util_docs_site_map": {

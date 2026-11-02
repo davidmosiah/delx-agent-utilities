@@ -294,7 +294,7 @@ async def test_mcp_server_readiness_is_registered_and_blocks_localhost():
     result = await call_util_tool("util_mcp_server_readiness_report", {"url": "http://localhost:3000"})
 
     assert result["tool_name"] == "util_mcp_server_readiness_report"
-    assert "local" in result["error"]
+    assert result["error"] == "probe_blocked"
 
 
 @pytest.mark.asyncio
@@ -343,7 +343,14 @@ async def test_loyalty_reward_quote_is_deterministic_and_ledger_ready():
 
 
 @pytest.mark.asyncio
-async def test_vin_decode_honda_sample():
+async def test_vin_decode_honda_sample(monkeypatch):
+    from delx_agent_utilities._internal import _tools_public_data as public_data
+
+    async def fake_get_json(url):
+        assert "/DecodeVinValues/1HGCM82633A004352" in url
+        return {"Results": [{"Make": "HONDA", "ModelYear": "2003"}]}
+
+    monkeypatch.setattr(public_data, "_get_json", fake_get_json)
     result = await call_util_tool("util_vin_decode", {"vin": "1HGCM82633A004352"})
     assert result.get("error") is None, result
     assert result["decoded"]["make"].upper() == "HONDA"
@@ -352,14 +359,42 @@ async def test_vin_decode_honda_sample():
 
 
 @pytest.mark.asyncio
-async def test_wmi_decode_honda():
+async def test_wmi_decode_honda(monkeypatch):
+    from delx_agent_utilities._internal import _tools_public_data as public_data
+
+    async def fake_get_json(url):
+        assert "/DecodeWMI/1HG" in url
+        return {"Results": [{"Make": "HONDA"}]}
+
+    monkeypatch.setattr(public_data, "_get_json", fake_get_json)
     result = await call_util_tool("util_wmi_decode", {"wmi": "1HG"})
     assert result.get("error") is None, result
     assert "HONDA" in (result.get("make") or "").upper() or "HONDA" in (result.get("manufacturer_name") or "").upper()
 
 
 @pytest.mark.asyncio
-async def test_lei_lookup_bloomberg():
+async def test_lei_lookup_bloomberg(monkeypatch):
+    from delx_agent_utilities._internal import _tools_public_data as public_data
+
+    class FakeResponse:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"data": [{"attributes": {"entity": {"legalName": {"name": "Bloomberg"}}}}]}
+
+    class FakeClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        async def get(self, url, *, params, headers):
+            assert params["filter[lei]"] == "5493001KJTIIGC8Y1R12"
+            return FakeResponse()
+
+    monkeypatch.setattr(public_data.httpx, "AsyncClient", lambda **kwargs: FakeClient())
     result = await call_util_tool("util_lei_lookup", {"lei": "5493001KJTIIGC8Y1R12"})
     assert result.get("error") is None, result
     assert result["found"] is True
